@@ -1,0 +1,388 @@
+{
+  "_meta": {
+    "models": {
+      "dashboardKPIs": "Ključne številke za nadzorno ploščo: skupni odprti dolg, število odprtih postavk, prejeta plačila v izbranem obdobju, število neujemajočih transakcij.",
+      "memberObligations": "Pregled obveznosti po tekmovalcih z informacijami o saldu, odprtih postavkah in zapadlih postavkah.",
+      "groupObligations": "Pregled obveznosti po skupinah z vsoto odprtih obveznosti po skupini.",
+      "financialReports": "Finančni pregledi z prihodki (plačila) in stroški po obdobjih ter primerjava ustvarjeno vs. plačano.",
+      "auditLog": "Revizijska sled zadnjih akcij (bulk obračuni, potrditve uvozov, razveljavitve stroškov) z informacijami kdo/kdaj/kaj."
+    },
+    "relationships": [
+      "Dashboard KPI se izračunajo iz stroškov, plačil in bančnih transakcij",
+      "Obveznosti po tekmovalcih se izračunajo iz stroškov in plačil po tekmovalcu",
+      "Obveznosti po skupinah se izračunajo iz stroškov in plačil po skupinah",
+      "Finančni pregledi se izračunajo iz stroškov in plačil po obdobjih",
+      "Revizijska sled beleži vse pomembne akcije v sistemu"
+    ]
+  },
+  "dashboardKPIs": {
+    "totalOpenDebt": 1015.00,
+    "openItemsCount": 8,
+    "paymentsInPeriod": 420.00,
+    "unmatchedTransactionsCount": 4
+  },
+  "memberObligations": [
+    {
+      "memberId": "mem-001",
+      "memberName": "Luka Novak",
+      "parentId": "par-001",
+      "parentName": "Janez Novak",
+      "groupId": "grp-001",
+      "groupName": "Andrejeva skupina",
+      "status": "active",
+      "balance": 450.00,
+      "openItemsCount": 3,
+      "overdueItemsCount": 1,
+      "overdueAmount": 50.00,
+      "openItems": [
+        {
+          "costId": "cost-001",
+          "title": "Vadnine - Januar 2024",
+          "amount": 50.00,
+          "dueDate": "2024-02-15",
+          "isOverdue": true
+        },
+        {
+          "costId": "cost-002",
+          "title": "Priprave Planica",
+          "amount": 150.00,
+          "dueDate": "2024-02-28",
+          "isOverdue": false
+        },
+        {
+          "costId": "cost-012",
+          "title": "Oprema - Smučarske čevlje",
+          "amount": 250.00,
+          "dueDate": null,
+          "isOverdue": false
+        }
+      ]
+    },
+    {
+      "memberId": "mem-002",
+      "memberName": "Ana Kovač",
+      "parentId": "par-002",
+      "parentName": "Maja Kovač",
+      "groupId": "grp-001",
+      "groupName": "Andrejeva skupina",
+      "status": "active",
+      "balance": 120.00,
+      "openItemsCount": 1,
+      "overdueItemsCount": 0,
+      "overdueAmount": 0.00,
+      "openItems": [
+        {
+          "costId": "cost-004",
+          "title": "Oprema - Smučarske palice",
+          "amount": 120.00,
+          "dueDate": null,
+          "isOverdue": false
+        }
+      ]
+    },
+    {
+      "memberId": "mem-003",
+      "memberName": "Marko Petek",
+      "parentId": "par-003",
+      "parentName": "Peter Petek",
+      "groupId": "grp-002",
+      "groupName": "Klemnova skupina",
+      "status": "inactive",
+      "balance": 200.00,
+      "openItemsCount": 1,
+      "overdueItemsCount": 0,
+      "overdueAmount": 0.00,
+      "openItems": [
+        {
+          "costId": "cost-005",
+          "title": "Članarina 2024",
+          "amount": 200.00,
+          "dueDate": "2024-03-31",
+          "isOverdue": false
+        }
+      ]
+    },
+    {
+      "memberId": "mem-004",
+      "memberName": "Sara Horvat",
+      "parentId": "par-004",
+      "parentName": "Sara Horvat",
+      "groupId": "grp-003",
+      "groupName": "Luka skupina",
+      "status": "active",
+      "balance": 50.00,
+      "openItemsCount": 1,
+      "overdueItemsCount": 1,
+      "overdueAmount": 50.00,
+      "openItems": [
+        {
+          "costId": "cost-006",
+          "title": "Vadnine - Januar 2024",
+          "amount": 50.00,
+          "dueDate": "2024-02-15",
+          "isOverdue": true
+        }
+      ]
+    },
+    {
+      "memberId": "mem-006",
+      "memberName": "Maja Krajnc",
+      "parentId": "par-006",
+      "parentName": "Irena Krajnc",
+      "groupId": "grp-001",
+      "groupName": "Andrejeva skupina",
+      "status": "active",
+      "balance": 50.00,
+      "openItemsCount": 1,
+      "overdueItemsCount": 1,
+      "overdueAmount": 50.00,
+      "openItems": [
+        {
+          "costId": "cost-008",
+          "title": "Vadnine - Januar 2024",
+          "amount": 50.00,
+          "dueDate": "2024-02-15",
+          "isOverdue": true
+        }
+      ]
+    },
+    {
+      "memberId": "mem-008",
+      "memberName": "Eva Vidmar",
+      "parentId": "par-008",
+      "parentName": "Tomaž Vidmar",
+      "groupId": "grp-003",
+      "groupName": "Luka skupina",
+      "status": "active",
+      "balance": 50.00,
+      "openItemsCount": 1,
+      "overdueItemsCount": 1,
+      "overdueAmount": 50.00,
+      "openItems": [
+        {
+          "costId": "cost-010",
+          "title": "Vadnine - Januar 2024",
+          "amount": 50.00,
+          "dueDate": "2024-02-15",
+          "isOverdue": true
+        }
+      ]
+    },
+    {
+      "memberId": "mem-010",
+      "memberName": "Katja Golob",
+      "parentId": "par-010",
+      "parentName": "Katja Golob",
+      "groupId": "grp-002",
+      "groupName": "Klemnova skupina",
+      "status": "active",
+      "balance": 180.00,
+      "openItemsCount": 1,
+      "overdueItemsCount": 0,
+      "overdueAmount": 0.00,
+      "openItems": [
+        {
+          "costId": "cost-011",
+          "title": "Priprave - Zimska sezona",
+          "amount": 180.00,
+          "dueDate": "2024-03-15",
+          "isOverdue": false
+        }
+      ]
+    }
+  ],
+  "groupObligations": [
+    {
+      "groupId": "grp-001",
+      "groupName": "Andrejeva skupina",
+      "totalOpenDebt": 620.00,
+      "openItemsCount": 5,
+      "overdueItemsCount": 2,
+      "overdueAmount": 100.00,
+      "memberCount": 3
+    },
+    {
+      "groupId": "grp-002",
+      "groupName": "Klemnova skupina",
+      "totalOpenDebt": 380.00,
+      "openItemsCount": 2,
+      "overdueItemsCount": 0,
+      "overdueAmount": 0.00,
+      "memberCount": 2
+    },
+    {
+      "groupId": "grp-003",
+      "groupName": "Luka skupina",
+      "totalOpenDebt": 100.00,
+      "openItemsCount": 2,
+      "overdueItemsCount": 2,
+      "overdueAmount": 100.00,
+      "memberCount": 2
+    }
+  ],
+  "financialReports": {
+    "period": {
+      "from": "2024-01-01",
+      "to": "2024-03-31"
+    },
+    "income": {
+      "total": 420.00,
+      "byMonth": [
+        {
+          "month": "2024-01",
+          "amount": 170.00,
+          "paymentCount": 2
+        },
+        {
+          "month": "2024-02",
+          "amount": 250.00,
+          "paymentCount": 1
+        },
+        {
+          "month": "2024-03",
+          "amount": 0.00,
+          "paymentCount": 0
+        }
+      ]
+    },
+    "costs": {
+      "total": 1015.00,
+      "byMonth": [
+        {
+          "month": "2024-01",
+          "amount": 1015.00,
+          "costCount": 12
+        },
+        {
+          "month": "2024-02",
+          "amount": 0.00,
+          "costCount": 0
+        },
+        {
+          "month": "2024-03",
+          "amount": 0.00,
+          "costCount": 0
+        }
+      ],
+      "byType": [
+        {
+          "costType": "Vadnine",
+          "amount": 300.00,
+          "costCount": 6
+        },
+        {
+          "costType": "Oprema",
+          "amount": 370.00,
+          "costCount": 3
+        },
+        {
+          "costType": "Priprave",
+          "amount": 330.00,
+          "costCount": 2
+        },
+        {
+          "costType": "Članarine",
+          "amount": 200.00,
+          "costCount": 1
+        },
+        {
+          "costType": "Zdravniški pregledi",
+          "amount": 35.00,
+          "costCount": 1
+        },
+        {
+          "costType": "Modre kartice",
+          "amount": 0.00,
+          "costCount": 0
+        }
+      ]
+    },
+    "comparison": {
+      "created": 1015.00,
+      "paid": 420.00,
+      "difference": -595.00,
+      "paymentRate": 41.38
+    }
+  },
+  "auditLog": [
+    {
+      "id": "audit-001",
+      "action": "bulk_billing",
+      "description": "Masovno obračunavanje: Vadnine - Januar 2024 za Andrejevo skupino",
+      "userId": "user-001",
+      "userName": "Bančnik",
+      "timestamp": "2024-01-01T10:00:00Z",
+      "details": {
+        "memberCount": 3,
+        "totalAmount": 150.00,
+        "costType": "Vadnine"
+      }
+    },
+    {
+      "id": "audit-002",
+      "action": "import_confirmed",
+      "description": "Potrjen uvoz bančnega izpiska: izpisek_januar_2024.pdf",
+      "userId": "user-001",
+      "userName": "Bančnik",
+      "timestamp": "2024-02-01T10:30:00Z",
+      "details": {
+        "statementId": "stmt-001",
+        "fileName": "izpisek_januar_2024.pdf",
+        "confirmedTransactions": 6
+      }
+    },
+    {
+      "id": "audit-003",
+      "action": "cost_cancelled",
+      "description": "Razveljavljen strošek: Modre kartice za Maja Krajnc",
+      "userId": "user-001",
+      "userName": "Bančnik",
+      "timestamp": "2024-01-15T14:00:00Z",
+      "details": {
+        "costId": "cost-009",
+        "memberId": "mem-006",
+        "amount": 25.00
+      }
+    },
+    {
+      "id": "audit-004",
+      "action": "bulk_billing",
+      "description": "Masovno obračunavanje: Priprave - Zimska sezona za Klemnovo skupino",
+      "userId": "user-001",
+      "userName": "Bančnik",
+      "timestamp": "2024-01-25T16:00:00Z",
+      "details": {
+        "memberCount": 1,
+        "totalAmount": 180.00,
+        "costType": "Priprave"
+      }
+    },
+    {
+      "id": "audit-005",
+      "action": "import_confirmed",
+      "description": "Potrjen uvoz bančnega izpiska: izpisek_februar_2024.xml",
+      "userId": "user-001",
+      "userName": "Bančnik",
+      "timestamp": "2024-03-01T09:15:00Z",
+      "details": {
+        "statementId": "stmt-002",
+        "fileName": "izpisek_februar_2024.xml",
+        "confirmedTransactions": 10
+      }
+    },
+    {
+      "id": "audit-006",
+      "action": "cost_created",
+      "description": "Ustvarjen strošek: Oprema - Smučarske čevlje za Luka Novak",
+      "userId": "user-001",
+      "userName": "Bančnik",
+      "timestamp": "2024-01-28T10:30:00Z",
+      "details": {
+        "costId": "cost-012",
+        "memberId": "mem-001",
+        "amount": 250.00
+      }
+    }
+  ]
+}
+

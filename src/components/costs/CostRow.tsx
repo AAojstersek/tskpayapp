@@ -1,0 +1,145 @@
+import type { Cost } from '@/types'
+import { Badge } from '@/components/ui'
+import { MoreVertical, Edit, X } from 'lucide-react'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/DropdownMenu'
+
+interface CostRowProps {
+  cost: Cost
+  memberName?: string | null
+  groupName?: string | null
+  onEdit?: (id: string) => void
+  onCancel?: (id: string) => void
+  showMemberColumn?: boolean
+  showGroupColumn?: boolean
+}
+
+export function CostRow({
+  cost,
+  memberName,
+  groupName,
+  onEdit,
+  onCancel,
+  showMemberColumn = true,
+  showGroupColumn = true,
+}: CostRowProps) {
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'pending':
+        return (
+          <Badge className="bg-amber-500 hover:bg-amber-600 text-white">
+            Odprto
+          </Badge>
+        )
+      case 'paid':
+        return (
+          <Badge className="bg-emerald-500 hover:bg-emerald-600 text-white">
+            Poravnano
+          </Badge>
+        )
+      case 'cancelled':
+        return (
+          <Badge variant="outline" className="border-slate-500 text-slate-500">
+            Razveljavljeno
+          </Badge>
+        )
+      default:
+        return null
+    }
+  }
+
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return '-'
+    const date = new Date(dateString)
+    return date.toLocaleDateString('sl-SI', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    })
+  }
+
+  return (
+    <tr className="border-b border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+      <td className="px-4 py-3">
+        <div className="font-medium text-slate-900 dark:text-slate-100">
+          {cost.title}
+        </div>
+        {cost.description && (
+          <div className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+            {cost.description}
+          </div>
+        )}
+      </td>
+      {showMemberColumn && (
+        <td className="px-4 py-3">
+          {memberName ? (
+            <div className="text-sm text-slate-700 dark:text-slate-300">
+              {memberName}
+            </div>
+          ) : (
+            <span className="text-sm text-slate-400">-</span>
+          )}
+        </td>
+      )}
+      {showGroupColumn && (
+        <td className="px-4 py-3">
+          {groupName ? (
+            <span className="text-sm text-slate-700 dark:text-slate-300">
+              {groupName}
+            </span>
+          ) : (
+            <span className="text-sm text-slate-400">-</span>
+          )}
+        </td>
+      )}
+      <td className="px-4 py-3">
+        <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+          {cost.costType}
+        </span>
+      </td>
+      <td className="px-4 py-3">
+        <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+          {cost.amount.toFixed(2)} €
+        </div>
+      </td>
+      <td className="px-4 py-3">
+        <div className="text-sm text-slate-600 dark:text-slate-400">
+          {formatDate(cost.dueDate)}
+        </div>
+      </td>
+      <td className="px-4 py-3">
+        {getStatusBadge(cost.status)}
+      </td>
+      <td className="px-4 py-3">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button className="p-1 hover:bg-slate-100 dark:hover:bg-slate-700 rounded">
+              <MoreVertical className="w-4 h-4 text-slate-500" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            {onEdit && cost.status !== 'cancelled' && (
+              <DropdownMenuItem onClick={() => onEdit(cost.id)}>
+                <Edit className="w-4 h-4 mr-2" />
+                Uredi
+              </DropdownMenuItem>
+            )}
+            {onCancel && cost.status !== 'cancelled' && (
+              <DropdownMenuItem
+                onClick={() => onCancel(cost.id)}
+                className="text-red-600 dark:text-red-400"
+              >
+                <X className="w-4 h-4 mr-2" />
+                Razveljavi
+              </DropdownMenuItem>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </td>
+    </tr>
+  )
+}

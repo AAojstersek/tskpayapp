@@ -1,0 +1,228 @@
+{
+  "_meta": {
+    "models": {
+      "members": "Tekmovalci kluba - člani z osnovnimi podatki, statusom in povezavami s starši in skupinami.",
+      "parents": "Starši tekmovalcev, ki so odgovorni za plačila in komunikacijo z klubom.",
+      "groups": "Trenerske skupine, ki organizirajo tekmovalce po starostnih skupinah in trenerjih.",
+      "coaches": "Trenerji, ki vodijo trenerske skupine in so odgovorni za določeno starostno skupino otrok."
+    },
+    "relationships": [
+      "Vsak tekmovalec pripada enemu staršu (plačniku) preko parentId",
+      "Vsak tekmovalec pripada eni trenerski skupini preko groupId",
+      "Vsaka skupina ima enega trenerja preko coachId",
+      "Starši lahko imajo več tekmovalcev (otroci)"
+    ]
+  },
+  "members": [
+    {
+      "id": "mem-001",
+      "firstName": "Luka",
+      "lastName": "Novak",
+      "dateOfBirth": "2010-03-15",
+      "status": "active",
+      "notes": "Odličen napredek v teku, pripravlja se na regionalno tekmovanje.",
+      "parentId": "par-001",
+      "groupId": "grp-001"
+    },
+    {
+      "id": "mem-002",
+      "firstName": "Ana",
+      "lastName": "Kovač",
+      "dateOfBirth": "2011-07-22",
+      "status": "active",
+      "notes": "",
+      "parentId": "par-002",
+      "groupId": "grp-001"
+    },
+    {
+      "id": "mem-003",
+      "firstName": "Marko",
+      "lastName": "Petek",
+      "dateOfBirth": "2009-11-08",
+      "status": "inactive",
+      "notes": "Začasno neaktivno zaradi poškodbe. Pričakovan povratek v mesecu.",
+      "parentId": "par-003",
+      "groupId": "grp-002"
+    },
+    {
+      "id": "mem-004",
+      "firstName": "Sara",
+      "lastName": "Horvat",
+      "dateOfBirth": "2012-01-30",
+      "status": "active",
+      "notes": "Nova članica, se še prilagaja.",
+      "parentId": "par-004",
+      "groupId": "grp-003"
+    },
+    {
+      "id": "mem-005",
+      "firstName": "Tine",
+      "lastName": "Zupan",
+      "dateOfBirth": "2010-09-14",
+      "status": "active",
+      "notes": "",
+      "parentId": "par-005",
+      "groupId": "grp-002"
+    },
+    {
+      "id": "mem-006",
+      "firstName": "Maja",
+      "lastName": "Krajnc",
+      "dateOfBirth": "2011-05-18",
+      "status": "active",
+      "notes": "Odličen rezultat na zadnjem tekmovanju.",
+      "parentId": "par-006",
+      "groupId": "grp-001"
+    },
+    {
+      "id": "mem-007",
+      "firstName": "Jan",
+      "lastName": "Mlakar",
+      "dateOfBirth": "2008-12-03",
+      "status": "archived",
+      "notes": "Zapustil klub zaradi selitve.",
+      "parentId": "par-007",
+      "groupId": "grp-002"
+    },
+    {
+      "id": "mem-008",
+      "firstName": "Eva",
+      "lastName": "Vidmar",
+      "dateOfBirth": "2012-08-25",
+      "status": "active",
+      "notes": "",
+      "parentId": "par-008",
+      "groupId": "grp-003"
+    },
+    {
+      "id": "mem-009",
+      "firstName": "Nejc",
+      "lastName": "Kos",
+      "dateOfBirth": "2010-02-11",
+      "status": "inactive",
+      "notes": "Začasno prekinil zaradi šolskih obveznosti.",
+      "parentId": "par-009",
+      "groupId": "grp-001"
+    },
+    {
+      "id": "mem-010",
+      "firstName": "Tjaša",
+      "lastName": "Golob",
+      "dateOfBirth": "2011-10-07",
+      "status": "active",
+      "notes": "Pripravlja se na zimsko sezono.",
+      "parentId": "par-010",
+      "groupId": "grp-003"
+    }
+  ],
+  "parents": [
+    {
+      "id": "par-001",
+      "firstName": "Janez",
+      "lastName": "Novak",
+      "email": "janez.novak@email.si",
+      "phone": "+386 41 123 456"
+    },
+    {
+      "id": "par-002",
+      "firstName": "Maja",
+      "lastName": "Kovač",
+      "email": "maja.kovac@email.si",
+      "phone": "+386 40 234 567"
+    },
+    {
+      "id": "par-003",
+      "firstName": "Peter",
+      "lastName": "Petek",
+      "email": "peter.petek@email.si",
+      "phone": "+386 31 345 678"
+    },
+    {
+      "id": "par-004",
+      "firstName": "Ana",
+      "lastName": "Horvat",
+      "email": "ana.horvat@email.si",
+      "phone": "+386 51 456 789"
+    },
+    {
+      "id": "par-005",
+      "firstName": "Marko",
+      "lastName": "Zupan",
+      "email": "marko.zupan@email.si",
+      "phone": "+386 41 567 890"
+    },
+    {
+      "id": "par-006",
+      "firstName": "Irena",
+      "lastName": "Krajnc",
+      "email": "irena.krajnc@email.si",
+      "phone": "+386 40 678 901"
+    },
+    {
+      "id": "par-007",
+      "firstName": "Bojan",
+      "lastName": "Mlakar",
+      "email": "bojan.mlakar@email.si",
+      "phone": "+386 31 789 012"
+    },
+    {
+      "id": "par-008",
+      "firstName": "Nina",
+      "lastName": "Vidmar",
+      "email": "nina.vidmar@email.si",
+      "phone": "+386 51 890 123"
+    },
+    {
+      "id": "par-009",
+      "firstName": "Tomaž",
+      "lastName": "Kos",
+      "email": "tomaz.kos@email.si",
+      "phone": "+386 41 901 234"
+    },
+    {
+      "id": "par-010",
+      "firstName": "Katja",
+      "lastName": "Golob",
+      "email": "katja.golob@email.si",
+      "phone": "+386 40 012 345"
+    }
+  ],
+  "groups": [
+    {
+      "id": "grp-001",
+      "name": "Andrejeva skupina",
+      "coachId": "coa-001"
+    },
+    {
+      "id": "grp-002",
+      "name": "Klemnova skupina",
+      "coachId": "coa-002"
+    },
+    {
+      "id": "grp-003",
+      "name": "Luka skupina",
+      "coachId": "coa-003"
+    }
+  ],
+  "coaches": [
+    {
+      "id": "coa-001",
+      "name": "Andrej Novak",
+      "email": "andrej.novak@klub.si",
+      "phone": "+386 41 111 222"
+    },
+    {
+      "id": "coa-002",
+      "name": "Klemen Horvat",
+      "email": "klemen.horvat@klub.si",
+      "phone": "+386 40 222 333"
+    },
+    {
+      "id": "coa-003",
+      "name": "Luka Kovač",
+      "email": "luka.kovac@klub.si",
+      "phone": "+386 31 333 444"
+    }
+  ]
+}
+

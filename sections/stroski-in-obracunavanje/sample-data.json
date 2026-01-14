@@ -1,0 +1,156 @@
+{
+  "_meta": {
+    "models": {
+      "costs": "Stroški, ki so vezani na tekmovalce in predstavljajo različne vrste obveznosti (vadnine, oprema, članarine, priprave, modre kartice, zdravniški pregledi).",
+      "costTypes": "Prednastavljeni seznam vrst stroškov, ki jih bančnik lahko uporablja pri obračunavanju."
+    },
+    "relationships": [
+      "Vsak strošek pripada enemu tekmovalcu preko memberId",
+      "Stroški imajo status (odprto/poravnano/razveljavljeno) za sledenje stanja",
+      "Stroški imajo vrsto, ki se izbere iz prednastavljenega seznama ali doda nova"
+    ]
+  },
+  "costTypes": [
+    "Vadnine",
+    "Oprema",
+    "Članarine",
+    "Priprave",
+    "Modre kartice",
+    "Zdravniški pregledi"
+  ],
+  "costs": [
+    {
+      "id": "cost-001",
+      "memberId": "mem-001",
+      "title": "Vadnine - Januar 2024",
+      "description": "Mesečne vadnine za januar",
+      "amount": 50.00,
+      "costType": "Vadnine",
+      "dueDate": "2024-02-15",
+      "status": "pending",
+      "createdAt": "2024-01-01T10:00:00Z"
+    },
+    {
+      "id": "cost-002",
+      "memberId": "mem-001",
+      "title": "Priprave Planica",
+      "description": "Priprave za tekmovanje na Planici",
+      "amount": 150.00,
+      "costType": "Priprave",
+      "dueDate": "2024-02-28",
+      "status": "pending",
+      "createdAt": "2024-01-15T14:30:00Z"
+    },
+    {
+      "id": "cost-003",
+      "memberId": "mem-002",
+      "title": "Vadnine - Januar 2024",
+      "description": "Mesečne vadnine za januar",
+      "amount": 50.00,
+      "costType": "Vadnine",
+      "dueDate": "2024-02-15",
+      "status": "paid",
+      "createdAt": "2024-01-01T10:00:00Z"
+    },
+    {
+      "id": "cost-004",
+      "memberId": "mem-002",
+      "title": "Oprema - Smučarske palice",
+      "description": "Nakup novih smučarskih palic",
+      "amount": 120.00,
+      "costType": "Oprema",
+      "dueDate": null,
+      "status": "pending",
+      "createdAt": "2024-01-20T09:15:00Z"
+    },
+    {
+      "id": "cost-005",
+      "memberId": "mem-003",
+      "title": "Članarina 2024",
+      "description": "Letna članarina za leto 2024",
+      "amount": 200.00,
+      "costType": "Članarine",
+      "dueDate": "2024-03-31",
+      "status": "pending",
+      "createdAt": "2024-01-05T08:00:00Z"
+    },
+    {
+      "id": "cost-006",
+      "memberId": "mem-004",
+      "title": "Vadnine - Januar 2024",
+      "description": "Mesečne vadnine za januar",
+      "amount": 50.00,
+      "costType": "Vadnine",
+      "dueDate": "2024-02-15",
+      "status": "pending",
+      "createdAt": "2024-01-01T10:00:00Z"
+    },
+    {
+      "id": "cost-007",
+      "memberId": "mem-005",
+      "title": "Zdravniški pregled",
+      "description": "Obvezni zdravniški pregled za tekmovanje",
+      "amount": 35.00,
+      "costType": "Zdravniški pregledi",
+      "dueDate": "2024-02-10",
+      "status": "paid",
+      "createdAt": "2024-01-10T11:20:00Z"
+    },
+    {
+      "id": "cost-008",
+      "memberId": "mem-006",
+      "title": "Vadnine - Januar 2024",
+      "description": "Mesečne vadnine za januar",
+      "amount": 50.00,
+      "costType": "Vadnine",
+      "dueDate": "2024-02-15",
+      "status": "pending",
+      "createdAt": "2024-01-01T10:00:00Z"
+    },
+    {
+      "id": "cost-009",
+      "memberId": "mem-006",
+      "title": "Modre kartice",
+      "description": "Nakup modrih kartic za tekmovanje",
+      "amount": 25.00,
+      "costType": "Modre kartice",
+      "dueDate": null,
+      "status": "cancelled",
+      "createdAt": "2024-01-12T13:45:00Z"
+    },
+    {
+      "id": "cost-010",
+      "memberId": "mem-008",
+      "title": "Vadnine - Januar 2024",
+      "description": "Mesečne vadnine za januar",
+      "amount": 50.00,
+      "costType": "Vadnine",
+      "dueDate": "2024-02-15",
+      "status": "pending",
+      "createdAt": "2024-01-01T10:00:00Z"
+    },
+    {
+      "id": "cost-011",
+      "memberId": "mem-010",
+      "title": "Priprave - Zimska sezona",
+      "description": "Priprave za zimsko sezono 2024",
+      "amount": 180.00,
+      "costType": "Priprave",
+      "dueDate": "2024-03-15",
+      "status": "pending",
+      "createdAt": "2024-01-25T16:00:00Z"
+    },
+    {
+      "id": "cost-012",
+      "memberId": "mem-001",
+      "title": "Oprema - Smučarske čevlje",
+      "description": "Nakup novih smučarskih čevljev",
+      "amount": 250.00,
+      "costType": "Oprema",
+      "dueDate": null,
+      "status": "pending",
+      "createdAt": "2024-01-28T10:30:00Z"
+    }
+  ]
+}
+

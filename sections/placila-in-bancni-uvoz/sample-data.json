@@ -1,0 +1,244 @@
+{
+  "_meta": {
+    "models": {
+      "bankStatements": "Bančni izpiski (PDF ali XML), ki so uvoženi v sistem in vsebujejo več transakcij.",
+      "bankTransactions": "Posamezne transakcije iz bančnih izpiskov, ki se lahko povežejo s starši in plačili.",
+      "payments": "Plačila, ki so bila potrjena iz bančnih transakcij in so zapisana v sistem."
+    },
+    "relationships": [
+      "Vsak bančni izpisek vsebuje več transakcij preko bankStatementId",
+      "Transakcije se lahko povežejo s starši preko matchedParentId",
+      "Potrjene transakcije se pretvorijo v plačila",
+      "Plačila so vezana na starše preko parentId"
+    ]
+  },
+  "bankStatements": [
+    {
+      "id": "stmt-001",
+      "fileName": "izpisek_januar_2024.pdf",
+      "fileType": "pdf",
+      "importedAt": "2024-02-01T10:30:00Z",
+      "status": "completed",
+      "totalTransactions": 8,
+      "matchedTransactions": 6,
+      "unmatchedTransactions": 2
+    },
+    {
+      "id": "stmt-002",
+      "fileName": "izpisek_februar_2024.xml",
+      "fileType": "xml",
+      "importedAt": "2024-03-01T09:15:00Z",
+      "status": "completed",
+      "totalTransactions": 12,
+      "matchedTransactions": 10,
+      "unmatchedTransactions": 2
+    },
+    {
+      "id": "stmt-003",
+      "fileName": "izpisek_marec_2024.pdf",
+      "fileType": "pdf",
+      "importedAt": "2024-04-01T14:20:00Z",
+      "status": "processing",
+      "totalTransactions": 0,
+      "matchedTransactions": 0,
+      "unmatchedTransactions": 0
+    }
+  ],
+  "bankTransactions": [
+    {
+      "id": "txn-001",
+      "bankStatementId": "stmt-001",
+      "transactionDate": "2024-01-15",
+      "amount": 50.00,
+      "description": "Nakazilo Janez Novak",
+      "reference": "SI56012345678901234",
+      "accountNumber": "SI56012345678901234",
+      "matchedParentId": "par-001",
+      "matchConfidence": "high",
+      "status": "matched",
+      "paymentId": null
+    },
+    {
+      "id": "txn-002",
+      "bankStatementId": "stmt-001",
+      "transactionDate": "2024-01-16",
+      "amount": 150.00,
+      "description": "Nakazilo Janez Novak",
+      "reference": "SI56012345678901234",
+      "accountNumber": "SI56012345678901234",
+      "matchedParentId": "par-001",
+      "matchConfidence": "high",
+      "status": "matched",
+      "paymentId": null
+    },
+    {
+      "id": "txn-003",
+      "bankStatementId": "stmt-001",
+      "transactionDate": "2024-01-18",
+      "amount": 50.00,
+      "description": "Nakazilo Maja Kovač",
+      "reference": "SI56023456789012345",
+      "accountNumber": "SI56023456789012345",
+      "matchedParentId": "par-002",
+      "matchConfidence": "high",
+      "status": "confirmed",
+      "paymentId": "pay-001"
+    },
+    {
+      "id": "txn-004",
+      "bankStatementId": "stmt-001",
+      "transactionDate": "2024-01-20",
+      "amount": 35.00,
+      "description": "Nakazilo Marko Zupan",
+      "reference": "SI56034567890123456",
+      "accountNumber": "SI56034567890123456",
+      "matchedParentId": "par-005",
+      "matchConfidence": "medium",
+      "status": "matched",
+      "paymentId": null
+    },
+    {
+      "id": "txn-005",
+      "bankStatementId": "stmt-001",
+      "transactionDate": "2024-01-22",
+      "amount": 200.00,
+      "description": "Nakazilo Peter Petek",
+      "reference": "SI56045678901234567",
+      "accountNumber": "SI56045678901234567",
+      "matchedParentId": "par-003",
+      "matchConfidence": "high",
+      "status": "matched",
+      "paymentId": null
+    },
+    {
+      "id": "txn-006",
+      "bankStatementId": "stmt-001",
+      "transactionDate": "2024-01-25",
+      "amount": 120.00,
+      "description": "Nakazilo Irena Krajnc",
+      "reference": "SI56056789012345678",
+      "accountNumber": "SI56056789012345678",
+      "matchedParentId": "par-006",
+      "matchConfidence": "high",
+      "status": "confirmed",
+      "paymentId": "pay-002"
+    },
+    {
+      "id": "txn-007",
+      "bankStatementId": "stmt-001",
+      "transactionDate": "2024-01-28",
+      "amount": 75.50,
+      "description": "Nakazilo neznanega plačnika",
+      "reference": null,
+      "accountNumber": "SI56067890123456789",
+      "matchedParentId": null,
+      "matchConfidence": null,
+      "status": "unmatched",
+      "paymentId": null
+    },
+    {
+      "id": "txn-008",
+      "bankStatementId": "stmt-001",
+      "transactionDate": "2024-01-30",
+      "amount": 50.00,
+      "description": "Nakazilo Ana Horvat",
+      "reference": "SI56078901234567890",
+      "accountNumber": "SI56078901234567890",
+      "matchedParentId": null,
+      "matchConfidence": null,
+      "status": "unmatched",
+      "paymentId": null
+    },
+    {
+      "id": "txn-009",
+      "bankStatementId": "stmt-002",
+      "transactionDate": "2024-02-05",
+      "amount": 50.00,
+      "description": "Nakazilo Luka Novak",
+      "reference": "SI56012345678901234",
+      "accountNumber": "SI56012345678901234",
+      "matchedParentId": "par-001",
+      "matchConfidence": "high",
+      "status": "matched",
+      "paymentId": null
+    },
+    {
+      "id": "txn-010",
+      "bankStatementId": "stmt-002",
+      "transactionDate": "2024-02-08",
+      "amount": 180.00,
+      "description": "Nakazilo Katja Golob",
+      "reference": "SI56089012345678901",
+      "accountNumber": "SI56089012345678901",
+      "matchedParentId": "par-010",
+      "matchConfidence": "medium",
+      "status": "matched",
+      "paymentId": null
+    },
+    {
+      "id": "txn-011",
+      "bankStatementId": "stmt-002",
+      "transactionDate": "2024-02-12",
+      "amount": 250.00,
+      "description": "Nakazilo Janez Novak",
+      "reference": "SI56012345678901234",
+      "accountNumber": "SI56012345678901234",
+      "matchedParentId": "par-001",
+      "matchConfidence": "high",
+      "status": "confirmed",
+      "paymentId": "pay-003"
+    },
+    {
+      "id": "txn-012",
+      "bankStatementId": "stmt-002",
+      "transactionDate": "2024-02-15",
+      "amount": 50.00,
+      "description": "Nakazilo Sara Horvat",
+      "reference": "SI56090123456789012",
+      "accountNumber": "SI56090123456789012",
+      "matchedParentId": "par-004",
+      "matchConfidence": "high",
+      "status": "matched",
+      "paymentId": null
+    }
+  ],
+  "payments": [
+    {
+      "id": "pay-001",
+      "parentId": "par-002",
+      "amount": 50.00,
+      "paymentDate": "2024-01-18",
+      "paymentMethod": "bank_transfer",
+      "referenceNumber": "SI56023456789012345",
+      "notes": "Plačilo za vadnine - Januar 2024",
+      "importedFromBank": true,
+      "bankTransactionId": "txn-003",
+      "createdAt": "2024-01-18T12:00:00Z"
+    },
+    {
+      "id": "pay-002",
+      "parentId": "par-006",
+      "amount": 120.00,
+      "paymentDate": "2024-01-25",
+      "paymentMethod": "bank_transfer",
+      "referenceNumber": "SI56056789012345678",
+      "notes": "Plačilo za opremo",
+      "importedFromBank": true,
+      "bankTransactionId": "txn-006",
+      "createdAt": "2024-01-25T14:30:00Z"
+    },
+    {
+      "id": "pay-003",
+      "parentId": "par-001",
+      "amount": 250.00,
+      "paymentDate": "2024-02-12",
+      "paymentMethod": "bank_transfer",
+      "referenceNumber": "SI56012345678901234",
+      "notes": "Plačilo za opremo - smučarske čevlje",
+      "importedFromBank": true,
+      "bankTransactionId": "txn-011",
+      "createdAt": "2024-02-12T10:15:00Z"
+    }
+  ]
+}
+
