@@ -1,8 +1,9 @@
-import { SelectHTMLAttributes, forwardRef, useState, useRef, useEffect } from 'react'
+import { SelectHTMLAttributes, forwardRef } from 'react'
 import { ChevronDown } from 'lucide-react'
 
 export interface SelectProps extends Omit<SelectHTMLAttributes<HTMLSelectElement>, 'onChange'> {
   onValueChange?: (value: string) => void
+  onChange?: React.ChangeEventHandler<HTMLSelectElement>
 }
 
 export const Select = forwardRef<HTMLSelectElement, SelectProps>(

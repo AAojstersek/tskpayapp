@@ -26,28 +26,30 @@ export function DropdownMenu({ children }: DropdownMenuProps) {
   let trigger: React.ReactNode = null
   let content: React.ReactNode = null
 
-  childrenArray.forEach((child: any) => {
-    if (child?.type?.name === 'DropdownMenuTrigger' || child?.type === DropdownMenuTrigger) {
-      trigger = child
-    } else if (child?.type?.name === 'DropdownMenuContent' || child?.type === DropdownMenuContent) {
-      content = child
+  childrenArray.forEach((child) => {
+    if (isValidElement(child)) {
+      if (child.type === DropdownMenuTrigger) {
+        trigger = child
+      } else if (child.type === DropdownMenuContent) {
+        content = child
+      }
     }
   })
 
-  const triggerElement = trigger && isValidElement(trigger) && trigger.props.asChild
-    ? cloneElement(trigger.props.children as React.ReactElement, { 
+  const triggerElement = trigger && isValidElement(trigger) && (trigger as React.ReactElement<{ asChild?: boolean; children?: React.ReactNode }>).props.asChild
+    ? cloneElement((trigger as React.ReactElement<{ asChild?: boolean; children?: React.ReactNode }>).props.children as React.ReactElement, { 
         onClick: (e: React.MouseEvent) => {
           e.stopPropagation()
           setOpen(!open)
         }
-      } as any)
+      })
     : trigger && isValidElement(trigger)
-    ? cloneElement(trigger, { 
+    ? cloneElement(trigger as React.ReactElement, { 
         onClick: (e: React.MouseEvent) => {
           e.stopPropagation()
           setOpen(!open)
         }
-      } as any)
+      })
     : <div onClick={() => setOpen(!open)}>{trigger}</div>
 
   return (
@@ -67,7 +69,7 @@ export interface DropdownMenuTriggerProps {
   children: React.ReactNode
 }
 
-export function DropdownMenuTrigger({ asChild, children }: DropdownMenuTriggerProps) {
+export function DropdownMenuTrigger({ children }: DropdownMenuTriggerProps) {
   return <>{children}</>
 }
 

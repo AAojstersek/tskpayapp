@@ -7,3 +7,4 @@ export { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '.
 export { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from './Dialog'
 export { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from './DropdownMenu'
 export { Tabs, TabsList, TabsTrigger } from './Tabs'
+export { Card, CardHeader, CardTitle, CardContent } from './Card'

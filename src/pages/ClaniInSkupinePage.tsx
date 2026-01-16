@@ -1,214 +1,300 @@
 import { useState } from 'react'
-import { MemberList, MemberForm } from '@/components/members'
-import type { Member, Parent, Group, Coach } from '@/types'
-
-// Sample data - in production, this would come from an API
-const initialMembers: Member[] = [
-  {
-    id: 'mem-001',
-    firstName: 'Luka',
-    lastName: 'Novak',
-    dateOfBirth: '2010-03-15',
-    status: 'active',
-    notes: 'Odličen napredek v teku, pripravlja se na regionalno tekmovanje.',
-    parentId: 'par-001',
-    groupId: 'grp-001',
-  },
-  {
-    id: 'mem-002',
-    firstName: 'Ana',
-    lastName: 'Kovač',
-    dateOfBirth: '2011-07-22',
-    status: 'active',
-    notes: '',
-    parentId: 'par-002',
-    groupId: 'grp-001',
-  },
-  {
-    id: 'mem-003',
-    firstName: 'Marko',
-    lastName: 'Petek',
-    dateOfBirth: '2009-11-08',
-    status: 'inactive',
-    notes: 'Začasno neaktivno zaradi poškodbe. Pričakovan povratek v mesecu.',
-    parentId: 'par-003',
-    groupId: 'grp-002',
-  },
-]
-
-const initialParents: Parent[] = [
-  {
-    id: 'par-001',
-    firstName: 'Janez',
-    lastName: 'Novak',
-    email: 'janez.novak@email.si',
-    phone: '+386 41 123 456',
-  },
-  {
-    id: 'par-002',
-    firstName: 'Maja',
-    lastName: 'Kovač',
-    email: 'maja.kovac@email.si',
-    phone: '+386 40 234 567',
-  },
-  {
-    id: 'par-003',
-    firstName: 'Peter',
-    lastName: 'Petek',
-    email: 'peter.petek@email.si',
-    phone: '+386 31 345 678',
-  },
-]
-
-const initialGroups: Group[] = [
-  {
-    id: 'grp-001',
-    name: 'Andrejeva skupina',
-    coachId: 'coa-001',
-  },
-  {
-    id: 'grp-002',
-    name: 'Klemnova skupina',
-    coachId: 'coa-002',
-  },
-  {
-    id: 'grp-003',
-    name: 'Luka skupina',
-    coachId: 'coa-003',
-  },
-]
-
-const initialCoaches: Coach[] = [
-  {
-    id: 'coa-001',
-    name: 'Andrej Novak',
-    email: 'andrej.novak@klub.si',
-    phone: '+386 41 111 222',
-  },
-  {
-    id: 'coa-002',
-    name: 'Klemen Horvat',
-    email: 'klemen.horvat@klub.si',
-    phone: '+386 40 222 333',
-  },
-  {
-    id: 'coa-003',
-    name: 'Luka Kovač',
-    email: 'luka.kovac@klub.si',
-    phone: '+386 31 333 444',
-  },
-]
+import { MemberList, MemberForm, ParentList, ParentForm, CoachList, CoachForm, RenameGroupDialog } from '@/components/members'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui'
+import type { Member, Parent, Coach } from '@/types'
+import { useMembers, useParents, useCoaches, useGroups } from '@/data/useAppStore'
 
 export function ClaniInSkupinePage() {
-  const [members, setMembers] = useState<Member[]>(initialMembers)
-  const [parents] = useState<Parent[]>(initialParents)
-  const [groups] = useState<Group[]>(initialGroups)
-  const [coaches] = useState<Coach[]>(initialCoaches)
+  const [mode, setMode] = useState<'members' | 'parents' | 'coaches'>('members')
+  const { members, create: createMember, update: updateMember, remove: deleteMember, set: setMembers } = useMembers()
+  const { parents, create: createParent, update: updateParent, remove: deleteParent } = useParents()
+  const { groups, create: createGroup, update: updateGroup, remove: deleteGroup } = useGroups()
+  const { coaches, create: createCoach, update: updateCoach, remove: deleteCoach } = useCoaches()
+
+  const [renameGroupDialogOpen, setRenameGroupDialogOpen] = useState(false)
+  const [renamingGroup, setRenamingGroup] = useState<{ coachId: string; groupId: string; currentName: string } | null>(null)
   const [searchFilter, setSearchFilter] = useState('')
   const [statusFilter, setStatusFilter] = useState<'active' | 'inactive' | 'archived' | 'all'>('all')
   const [groupFilter, setGroupFilter] = useState<string | undefined>(undefined)
-  const [formOpen, setFormOpen] = useState(false)
+  const [memberFormOpen, setMemberFormOpen] = useState(false)
   const [editingMember, setEditingMember] = useState<Member | null>(null)
+  const [parentFormOpen, setParentFormOpen] = useState(false)
+  const [editingParent, setEditingParent] = useState<Parent | null>(null)
+  const [coachFormOpen, setCoachFormOpen] = useState(false)
+  const [editingCoach, setEditingCoach] = useState<Coach | null>(null)
 
   const handleCreateMember = () => {
     setEditingMember(null)
-    setFormOpen(true)
+    setMemberFormOpen(true)
   }
 
   const handleEditMember = (id: string) => {
     const member = members.find((m) => m.id === id)
     setEditingMember(member || null)
-    setFormOpen(true)
+    setMemberFormOpen(true)
   }
 
   const handleDeleteMember = (id: string) => {
     if (confirm('Ali ste prepričani, da želite izbrisati tega tekmovalca?')) {
-      setMembers(members.filter((m) => m.id !== id))
+      deleteMember(id)
     }
   }
 
   const handleSaveMember = (memberData: Omit<Member, 'id'>) => {
     if (editingMember) {
       // Update existing member
-      setMembers(
-        members.map((m) =>
-          m.id === editingMember.id ? { ...m, ...memberData } : m
-        )
-      )
+      updateMember(editingMember.id, memberData)
     } else {
       // Create new member
-      const newMember: Member = {
-        ...memberData,
-        id: `mem-${Date.now()}`,
-      }
-      setMembers([...members, newMember])
+      createMember(memberData)
     }
-    setFormOpen(false)
+    setMemberFormOpen(false)
     setEditingMember(null)
   }
 
   const handleStatusChange = (id: string, status: 'active' | 'inactive' | 'archived') => {
-    setMembers(
-      members.map((m) => (m.id === id ? { ...m, status } : m))
-    )
+    updateMember(id, { status })
   }
 
   const handleBulkStatusChange = (memberIds: string[], status: 'active' | 'inactive' | 'archived') => {
-    setMembers(
-      members.map((m) => (memberIds.includes(m.id) ? { ...m, status } : m))
+    const updatedMembers = members.map((m) =>
+      memberIds.includes(m.id) ? { ...m, status } : m
     )
+    setMembers(updatedMembers)
   }
 
   const handleBulkAssignGroup = (memberIds: string[], groupId: string) => {
-    setMembers(
-      members.map((m) => (memberIds.includes(m.id) ? { ...m, groupId } : m))
+    const updatedMembers = members.map((m) =>
+      memberIds.includes(m.id) ? { ...m, groupId } : m
     )
+    setMembers(updatedMembers)
   }
 
-  const handleManageParents = () => {
-    alert('Upravljanje staršev - to bo implementirano kasneje')
+  const handleCreateParent = () => {
+    setEditingParent(null)
+    setParentFormOpen(true)
   }
 
-  const handleManageCoaches = () => {
-    alert('Upravljanje trenerjev - to bo implementirano kasneje')
+  const handleEditParent = (id: string) => {
+    const parent = parents.find((p) => p.id === id)
+    setEditingParent(parent || null)
+    setParentFormOpen(true)
+  }
+
+  const handleDeleteParent = (id: string) => {
+    const memberCount = members.filter((m) => m.parentId === id).length
+    if (memberCount > 0) {
+      alert(`Ne morete izbrisati starša, ker je povezan z ${memberCount} ${memberCount === 1 ? 'tekmovalcem' : 'tekmovalci'}.`)
+      return
+    }
+    if (confirm('Ali ste prepričani, da želite izbrisati tega starša?')) {
+      deleteParent(id)
+    }
+  }
+
+  const handleSaveParent = (parentData: Omit<Parent, 'id'>) => {
+    if (editingParent) {
+      updateParent(editingParent.id, parentData)
+    } else {
+      createParent(parentData)
+    }
+    setParentFormOpen(false)
+    setEditingParent(null)
+  }
+
+  const handleCreateCoach = () => {
+    setEditingCoach(null)
+    setCoachFormOpen(true)
+  }
+
+  const handleEditCoach = (id: string) => {
+    const coach = coaches.find((c) => c.id === id)
+    setEditingCoach(coach || null)
+    setCoachFormOpen(true)
+  }
+
+  const handleDeleteCoach = (id: string) => {
+    const memberCount = members.filter((m) => {
+      const memberGroup = groups.find((g) => g.id === m.groupId)
+      return memberGroup?.coachId === id
+    }).length
+
+    if (memberCount > 0) {
+      alert(`Ne morete izbrisati trenerja, ker ima ${memberCount} ${memberCount === 1 ? 'tekmovalca' : 'tekmovalcev'} v skupini.`)
+      return
+    }
+
+    if (confirm('Ali ste prepričani, da želite izbrisati tega trenerja? Skupina bo tudi izbrisana.')) {
+      deleteCoach(id)
+      // Also delete the coach's group
+      const coachGroups = groups.filter((g) => g.coachId === id)
+      coachGroups.forEach((g) => deleteGroup(g.id))
+    }
+  }
+
+  const handleSaveCoach = (coachData: Omit<Coach, 'id'>, groupName?: string) => {
+    if (editingCoach) {
+      updateCoach(editingCoach.id, coachData)
+    } else {
+      const newCoach = createCoach(coachData)
+
+      // Automatically create a group for the new coach
+      if (groupName) {
+        createGroup({
+          name: groupName,
+          coachId: newCoach.id,
+        })
+      }
+    }
+    setCoachFormOpen(false)
+    setEditingCoach(null)
+  }
+
+  const handleRenameGroup = (coachId: string, groupId: string) => {
+    const group = groups.find((g) => g.id === groupId && g.coachId === coachId)
+    if (group) {
+      setRenamingGroup({ coachId, groupId, currentName: group.name })
+      setRenameGroupDialogOpen(true)
+    }
+  }
+
+  const handleSaveGroupRename = (newName: string) => {
+    if (renamingGroup) {
+      updateGroup(renamingGroup.groupId, { name: newName })
+      setRenameGroupDialogOpen(false)
+      setRenamingGroup(null)
+    }
+  }
+
+  const getPrimaryActionLabel = () => {
+    switch (mode) {
+      case 'members':
+        return 'Dodaj tekmovalca'
+      case 'parents':
+        return 'Dodaj starša'
+      case 'coaches':
+        return 'Dodaj trenerja'
+    }
+  }
+
+  const handlePrimaryAction = () => {
+    switch (mode) {
+      case 'members':
+        handleCreateMember()
+        break
+      case 'parents':
+        handleCreateParent()
+        break
+      case 'coaches':
+        handleCreateCoach()
+        break
+    }
   }
 
   return (
     <>
-      <MemberList
-        members={members}
-        parents={parents}
-        groups={groups}
-        coaches={coaches}
-        searchFilter={searchFilter}
-        statusFilter={statusFilter}
-        groupFilter={groupFilter}
-        onViewMember={(id) => {
-          const member = members.find((m) => m.id === id)
-          alert(`Pregled tekmovalca: ${member?.firstName} ${member?.lastName}`)
-        }}
-        onEditMember={handleEditMember}
-        onDeleteMember={handleDeleteMember}
-        onCreateMember={handleCreateMember}
-        onStatusChange={handleStatusChange}
-        onBulkStatusChange={handleBulkStatusChange}
-        onBulkAssignGroup={handleBulkAssignGroup}
-        onSearchChange={setSearchFilter}
-        onStatusFilterChange={setStatusFilter}
-        onGroupFilterChange={setGroupFilter}
-        onManageParents={handleManageParents}
-        onManageCoaches={handleManageCoaches}
+      <div className="max-w-7xl mx-auto p-6 space-y-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div>
+            <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
+              Člani in skupine
+            </h1>
+            <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+              Upravljanje tekmovalcev, staršev in trenerskih skupin
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Tabs value={mode} onValueChange={(v) => setMode(v as 'members' | 'parents' | 'coaches')}>
+              <TabsList>
+                <TabsTrigger value="members">Tekmovalci</TabsTrigger>
+                <TabsTrigger value="parents">Starši</TabsTrigger>
+                <TabsTrigger value="coaches">Trenerji</TabsTrigger>
+              </TabsList>
+            </Tabs>
+            <button
+              onClick={handlePrimaryAction}
+              className="inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-medium ring-offset-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              {getPrimaryActionLabel()}
+            </button>
+          </div>
+        </div>
+
+        {mode === 'members' && (
+          <MemberList
+            members={members}
+            parents={parents}
+            groups={groups}
+            coaches={coaches}
+            searchFilter={searchFilter}
+            statusFilter={statusFilter}
+            groupFilter={groupFilter}
+            onViewMember={(id) => {
+              const member = members.find((m) => m.id === id)
+              alert(`Pregled tekmovalca: ${member?.firstName} ${member?.lastName}`)
+            }}
+            onEditMember={handleEditMember}
+            onDeleteMember={handleDeleteMember}
+            onStatusChange={handleStatusChange}
+            onBulkStatusChange={handleBulkStatusChange}
+            onBulkAssignGroup={handleBulkAssignGroup}
+            onSearchChange={setSearchFilter}
+            onStatusFilterChange={setStatusFilter}
+            onGroupFilterChange={setGroupFilter}
+          />
+        )}
+
+        {mode === 'parents' && (
+          <ParentList
+            parents={parents}
+            members={members}
+            searchFilter={searchFilter}
+            onEditParent={handleEditParent}
+            onDeleteParent={handleDeleteParent}
+            onSearchChange={setSearchFilter}
+          />
+        )}
+
+        {mode === 'coaches' && (
+          <CoachList
+            coaches={coaches}
+            groups={groups}
+            searchFilter={searchFilter}
+            onEditCoach={handleEditCoach}
+            onDeleteCoach={handleDeleteCoach}
+            onRenameGroup={handleRenameGroup}
+            onSearchChange={setSearchFilter}
+          />
+        )}
+      </div>
+
+      <RenameGroupDialog
+        groupName={renamingGroup?.currentName || ''}
+        open={renameGroupDialogOpen}
+        onOpenChange={setRenameGroupDialogOpen}
+        onSave={handleSaveGroupRename}
       />
+
       <MemberForm
         member={editingMember}
         parents={parents}
         groups={groups}
-        open={formOpen}
-        onOpenChange={setFormOpen}
+        open={memberFormOpen}
+        onOpenChange={setMemberFormOpen}
         onSave={handleSaveMember}
-        onAddParent={() => {
-          alert('Dodajanje novega starša - to bo implementirano kasneje')
-        }}
+        onAddParent={handleCreateParent}
+      />
+      <ParentForm
+        parent={editingParent}
+        open={parentFormOpen}
+        onOpenChange={setParentFormOpen}
+        onSave={handleSaveParent}
+      />
+      <CoachForm
+        coach={editingCoach}
+        open={coachFormOpen}
+        onOpenChange={setCoachFormOpen}
+        onSave={handleSaveCoach}
       />
     </>
   )

@@ -1,12 +1,11 @@
 import { useState, useEffect } from 'react'
-import type { Cost, Member, Group } from '@/types'
+import type { Cost, Member } from '@/types'
 import { Button, Input, Label, Select } from '@/components/ui'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/Dialog'
 
 export interface CostFormProps {
   cost?: Cost | null
   members: Member[]
-  groups: Group[]
   costTypes: string[]
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -16,7 +15,6 @@ export interface CostFormProps {
 export function CostForm({
   cost,
   members,
-  groups,
   costTypes,
   open,
   onOpenChange,

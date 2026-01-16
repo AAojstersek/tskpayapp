@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import type { BankStatement, BankTransaction, Parent } from '@/types'
 import { TransactionRow } from './TransactionRow'
-import { Button, Select, Input, Badge } from '@/components/ui'
+import { Button, Select, Input } from '@/components/ui'
 import { ArrowLeft, CheckCircle2, Filter } from 'lucide-react'
 
 export interface TransactionListProps {

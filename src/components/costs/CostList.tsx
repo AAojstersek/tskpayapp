@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import type { Cost, Member, Group } from '@/types'
+import type { Cost } from '@/types'
 import { CostRow } from './CostRow'
 import { Button, Badge, Select, Tabs, TabsList, TabsTrigger } from '@/components/ui'
 import {
@@ -107,11 +107,6 @@ export function CostList({
     }
     setSelectedMemberIds(newSelected)
   }
-
-  const allSelected =
-    filteredCosts.length > 0 &&
-    selectedMemberIds.size ===
-      new Set(filteredCosts.map((c) => c.memberId)).size
 
   return (
     <div className="max-w-7xl mx-auto p-6 space-y-6">

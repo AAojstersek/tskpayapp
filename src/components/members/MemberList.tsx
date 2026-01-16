@@ -2,7 +2,6 @@ import { useState, useMemo } from 'react'
 import type { Member, Parent, Group, Coach } from '@/types'
 import { MemberRow } from './MemberRow'
 import { Button, Input, Select } from '@/components/ui'
-import { Plus, Users, UserCog } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,7 +20,6 @@ export interface MemberListProps {
   onViewMember?: (id: string) => void
   onEditMember?: (id: string) => void
   onDeleteMember?: (id: string) => void
-  onCreateMember?: () => void
   onStatusChange?: (id: string, status: 'active' | 'inactive' | 'archived') => void
   onAssignGroup?: (memberId: string, groupId: string) => void
   onBulkStatusChange?: (memberIds: string[], status: 'active' | 'inactive' | 'archived') => void
@@ -29,31 +27,24 @@ export interface MemberListProps {
   onSearchChange?: (search: string) => void
   onStatusFilterChange?: (status: 'active' | 'inactive' | 'archived' | 'all') => void
   onGroupFilterChange?: (groupId: string | undefined) => void
-  onManageParents?: () => void
-  onManageCoaches?: () => void
 }
 
 export function MemberList({
   members,
   parents,
   groups,
-  coaches,
   searchFilter = '',
   statusFilter = 'all',
   groupFilter,
   onViewMember,
   onEditMember,
   onDeleteMember,
-  onCreateMember,
   onStatusChange,
-  onAssignGroup,
   onBulkStatusChange,
   onBulkAssignGroup,
   onSearchChange,
   onStatusFilterChange,
   onGroupFilterChange,
-  onManageParents,
-  onManageCoaches,
 }: MemberListProps) {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [localSearch, setLocalSearch] = useState(searchFilter)
@@ -130,39 +121,6 @@ export function MemberList({
 
   return (
     <div className="max-w-7xl mx-auto p-6 space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
-            Člani in skupine
-          </h1>
-          <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
-            Upravljanje tekmovalcev, staršev in trenerskih skupin
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            onClick={onManageParents}
-            className="hidden sm:flex"
-          >
-            <Users className="w-4 h-4 mr-2" />
-            Starši
-          </Button>
-          <Button
-            variant="outline"
-            onClick={onManageCoaches}
-            className="hidden sm:flex"
-          >
-            <UserCog className="w-4 h-4 mr-2" />
-            Trenerji
-          </Button>
-          <Button onClick={onCreateMember} className="bg-blue-600 hover:bg-blue-700">
-            <Plus className="w-4 h-4 mr-2" />
-            Dodaj tekmovalca
-          </Button>
-        </div>
-      </div>
-
       <div className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-4">
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="flex-1">
@@ -293,10 +251,6 @@ export function MemberList({
                       <div className="space-y-2">
                         <p className="text-slate-500 dark:text-slate-400">Ni članov</p>
                         <p className="text-sm text-slate-400">Dodajte prvega tekmovalca, da začnete</p>
-                        <Button onClick={onCreateMember} className="mt-4">
-                          <Plus className="w-4 h-4 mr-2" />
-                          Dodaj tekmovalca
-                        </Button>
                       </div>
                     ) : (
                       <div className="space-y-2">
