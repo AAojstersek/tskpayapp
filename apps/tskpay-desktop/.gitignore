@@ -23,20 +23,5 @@ dist-ssr
 *.sln
 *.sw?
 
-# Database files
-*.db
-*.sqlite
-*.sqlite3
-
-# Backup files
-*.tskpay-backup
-
-# Import directories
-/imports/
-/bank_xml/
-
-# Tauri build artifacts
-/apps/tskpay-desktop/src-tauri/target/
-
-# Environment files
-.env*
+# Tauri
+src-tauri/target
