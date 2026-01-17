@@ -11,8 +11,9 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     
     const variantClasses = {
       default: 'bg-blue-600 text-white hover:bg-blue-700',
-      outline: 'border border-slate-300 bg-white hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700',
-      ghost: 'hover:bg-slate-100 dark:hover:bg-slate-800',
+      outline:
+        'border border-slate-300 bg-white text-slate-900 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700',
+      ghost: 'text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800',
     }
     
     const sizeClasses = {

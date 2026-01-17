@@ -59,17 +59,25 @@ function calculateMemberObligations(
   // Group payments by parent
   const paymentsByParent = new Map<string, number>()
   payments.forEach((p) => {
-    const current = paymentsByParent.get(p.parentId) || 0
-    paymentsByParent.set(p.parentId, current + p.amount)
+    if (p.parentId) {
+      const current = paymentsByParent.get(p.parentId) || 0
+      paymentsByParent.set(p.parentId, current + p.amount)
+    }
   })
 
-  // Group members by parent to allocate payments
+  // Group members by parent to allocate payments (member can have multiple parents)
   const membersByParent = new Map<string, Member[]>()
   members.forEach((m) => {
-    if (!membersByParent.has(m.parentId)) {
-      membersByParent.set(m.parentId, [])
-    }
-    membersByParent.get(m.parentId)!.push(m)
+    const memberParentIds = m.parentIds && m.parentIds.length > 0
+      ? m.parentIds
+      : (m.parentId ? [m.parentId] : [])
+    
+    memberParentIds.forEach((parentId) => {
+      if (!membersByParent.has(parentId)) {
+        membersByParent.set(parentId, [])
+      }
+      membersByParent.get(parentId)!.push(m)
+    })
   })
 
   // Calculate obligations per member
@@ -81,14 +89,24 @@ function calculateMemberObligations(
     if (!member) return
 
     if (!obligationsMap.has(cost.memberId)) {
-      const parent = parentsMap.get(member.parentId)
+      const memberParentIds = member.parentIds && member.parentIds.length > 0
+        ? member.parentIds
+        : (member.parentId ? [member.parentId] : [])
+      const firstParentId = memberParentIds[0] || member.parentId
+      const parentNames = memberParentIds
+        .map((pid) => {
+          const p = parentsMap.get(pid)
+          return p ? `${p.firstName} ${p.lastName}` : null
+        })
+        .filter((n): n is string => n !== null)
+        .join(', ') || 'Neznan'
       const group = groupsMap.get(member.groupId)
 
       obligationsMap.set(cost.memberId, {
         memberId: cost.memberId,
         memberName: `${member.firstName} ${member.lastName}`,
-        parentId: member.parentId,
-        parentName: parent ? `${parent.firstName} ${parent.lastName}` : 'Neznan',
+        parentId: firstParentId || '',
+        parentName: parentNames,
         groupId: member.groupId,
         groupName: group?.name || 'Neznana skupina',
         status: member.status,
@@ -127,13 +145,24 @@ function calculateMemberObligations(
   obligationsMap.forEach((obligation) => {
     const member = membersMap.get(obligation.memberId)
     if (member) {
-      const parentPayments = paymentsByParent.get(member.parentId) || 0
-      const siblings = membersByParent.get(member.parentId) || []
-      const siblingCount = siblings.length
+      const memberParentIds = member.parentIds && member.parentIds.length > 0
+        ? member.parentIds
+        : (member.parentId ? [member.parentId] : [])
       
-      if (siblingCount > 0 && parentPayments > 0) {
-        // Simple allocation: divide payments equally among siblings
-        const allocatedPayment = parentPayments / siblingCount
+      // Sum payments from all parents of this member
+      let totalParentPayments = 0
+      let totalSiblingCount = 0
+      
+      memberParentIds.forEach((parentId) => {
+        const parentPayments = paymentsByParent.get(parentId) || 0
+        const siblings = membersByParent.get(parentId) || []
+        totalParentPayments += parentPayments
+        totalSiblingCount += siblings.length
+      })
+      
+      if (totalSiblingCount > 0 && totalParentPayments > 0) {
+        // Simple allocation: divide payments equally among all siblings from all parents
+        const allocatedPayment = totalParentPayments / totalSiblingCount
         obligation.balance = Math.max(0, obligation.balance - allocatedPayment)
       }
     }

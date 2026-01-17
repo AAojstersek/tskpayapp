@@ -26,8 +26,13 @@ export function ParentList({
     () => {
       const map = new Map<string, number>()
       members.forEach((m) => {
-        const count = map.get(m.parentId) || 0
-        map.set(m.parentId, count + 1)
+        const memberParentIds = m.parentIds && m.parentIds.length > 0
+          ? m.parentIds
+          : (m.parentId ? [m.parentId] : [])
+        memberParentIds.forEach((parentId) => {
+          const count = map.get(parentId) || 0
+          map.set(parentId, count + 1)
+        })
       })
       return map
     },

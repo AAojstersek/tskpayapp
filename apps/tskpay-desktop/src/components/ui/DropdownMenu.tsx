@@ -87,7 +87,7 @@ export function DropdownMenuContent({ align = 'end', children }: DropdownMenuCon
 
   return (
     <div
-      className={`absolute ${alignClasses[align]} top-full mt-1 z-50 min-w-[8rem] overflow-hidden rounded-md border border-slate-200 bg-white shadow-lg dark:border-slate-700 dark:bg-slate-800 py-1`}
+      className={`absolute ${alignClasses[align]} top-full mt-1 z-50 min-w-[8rem] overflow-hidden rounded-md border border-slate-200 bg-white text-slate-900 shadow-lg dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 py-1`}
     >
       {children}
     </div>
@@ -101,7 +101,7 @@ export interface DropdownMenuItemProps extends React.ButtonHTMLAttributes<HTMLBu
 export function DropdownMenuItem({ className = '', children, ...props }: DropdownMenuItemProps) {
   return (
     <button
-      className={`relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-slate-100 focus:bg-slate-100 dark:hover:bg-slate-700 dark:focus:bg-slate-700 w-full text-left ${className}`}
+      className={`relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm text-slate-700 outline-none transition-colors hover:bg-slate-100 focus:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-700 dark:focus:bg-slate-700 w-full text-left ${className}`}
       {...props}
     >
       {children}

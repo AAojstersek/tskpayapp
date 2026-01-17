@@ -41,7 +41,7 @@ export interface DialogContentProps extends React.HTMLAttributes<HTMLDivElement>
 export function DialogContent({ className = '', children, ...props }: DialogContentProps) {
   return (
     <div
-      className={`relative bg-white dark:bg-slate-800 rounded-lg shadow-lg border border-slate-200 dark:border-slate-700 w-full max-w-lg ${className}`}
+      className={`relative bg-white text-slate-900 dark:bg-slate-800 dark:text-slate-100 rounded-lg shadow-lg border border-slate-200 dark:border-slate-700 w-full max-w-lg ${className}`}
       {...props}
     >
       {children}
@@ -81,7 +81,7 @@ export function DialogClose({ onClose }: DialogCloseProps) {
   return (
     <button
       onClick={onClose}
-      className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-white transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:ring-offset-slate-950"
+      className="absolute right-4 top-4 rounded-sm text-slate-700 opacity-70 ring-offset-white transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:text-slate-200 dark:ring-offset-slate-950"
     >
       <X className="h-4 w-4" />
       <span className="sr-only">Close</span>

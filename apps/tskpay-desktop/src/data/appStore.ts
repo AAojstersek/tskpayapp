@@ -5,12 +5,13 @@ import type {
   Group,
   Cost,
   Payment,
+  PaymentAllocation,
   BankStatement,
   BankTransaction,
   AuditLogEntry,
 } from '@/types'
-import { db } from './database'
-import { dbToType, dbCostToType, typeCostToDb } from './db-helpers'
+import { db, create as dbCreate, update as dbUpdate, remove as dbRemove, EntityType as DbEntityType } from './database'
+import { dbToType, dbCostToType, typeCostToDb, typeToDb } from './db-helpers'
 import { migrateFromLocalStorage } from './migration'
 
 // App state interface
@@ -21,6 +22,7 @@ export interface AppState {
   groups: Group[]
   costs: Cost[]
   payments: Payment[]
+  paymentAllocations: PaymentAllocation[]
   bankStatements: BankStatement[]
   bankTransactions: BankTransaction[]
   auditLog: AuditLogEntry[]
@@ -35,6 +37,7 @@ const initialState: AppState = {
   groups: [],
   costs: [],
   payments: [],
+  paymentAllocations: [],
   bankStatements: [],
   bankTransactions: [],
   auditLog: [],
@@ -61,6 +64,7 @@ type EntityType =
   | 'groups'
   | 'costs'
   | 'payments'
+  | 'paymentAllocations'
   | 'bankStatements'
   | 'bankTransactions'
   | 'auditLog'
@@ -72,6 +76,7 @@ type EntityMap = {
   groups: Group
   costs: Cost
   payments: Payment
+  paymentAllocations: PaymentAllocation
   bankStatements: BankStatement
   bankTransactions: BankTransaction
   auditLog: AuditLogEntry
@@ -85,6 +90,7 @@ const entityToTable: Record<EntityType, string> = {
   groups: 'groups',
   costs: 'costs',
   payments: 'payments',
+  paymentAllocations: 'payment_allocations',
   bankStatements: 'bank_statements',
   bankTransactions: 'bank_transactions',
   auditLog: 'audit_log',
@@ -99,22 +105,36 @@ async function initializeStore(): Promise<void> {
     await migrateFromLocalStorage()
     
     // Load all data from database
-    const [members, parents, coaches, groups, costs, payments, bankStatements, bankTransactions, auditLog, costTypes] = await Promise.all([
+    const [members, parents, coaches, groups, costs, payments, paymentAllocations, bankStatements, bankTransactions, auditLog, costTypes] = await Promise.all([
       db.members.getAll(),
       db.parents.getAll(),
       db.coaches.getAll(),
       db.groups.getAll(),
       db.costs.getAll(),
       db.payments.getAll(),
+      db.paymentAllocations.getAll(),
       db.bankStatements.getAll(),
       db.bankTransactions.getAll(),
       db.auditLog.getAll(),
       db.costTypes.getAll(),
     ])
     
+    // Load parent IDs for all members
+    const membersWithParents = await Promise.all(
+      members.map(async (m) => {
+        const member = dbToType<Member>(m)
+        const parentIds = await db.memberParents.getMemberParents(member.id)
+        return {
+          ...member,
+          parentIds: parentIds.length > 0 ? parentIds : (member.parentId ? [member.parentId] : []),
+          parentId: member.parentId || (parentIds.length > 0 ? parentIds[0] : undefined),
+        }
+      })
+    )
+
     // Convert database format to TypeScript types
     appState = {
-      members: members.map((m) => dbToType<Member>(m)),
+      members: membersWithParents,
       parents: parents.map((p) => dbToType<Parent>(p)),
       coaches: coaches.map((c) => dbToType<Coach>(c)),
       groups: groups.map((g) => dbToType<Group>(g)),
@@ -123,7 +143,7 @@ async function initializeStore(): Promise<void> {
           const costTypeId = c.cost_type_id as string
           const costType = costTypes.find((ct) => ct.id === costTypeId)
           const costTypeName = (costType?.name as string) || ''
-          const cost = dbCostToType(c, costTypeName) as Cost
+          const cost = dbCostToType(c, costTypeName) as unknown as Cost
           // Ensure boolean conversion for is_recurring
           if (c.is_recurring === 1) {
             cost.isRecurring = true
@@ -139,8 +159,13 @@ async function initializeStore(): Promise<void> {
         if (p.imported_from_bank === 1) {
           payment.importedFromBank = true
         }
+        // Set default status if not present
+        if (!payment.status) {
+          payment.status = payment.parentId ? 'confirmed' : 'pending'
+        }
         return payment
       }),
+      paymentAllocations: paymentAllocations.map((pa) => dbToType<PaymentAllocation>(pa)),
       bankStatements: bankStatements.map((bs) => dbToType<BankStatement>(bs)),
       bankTransactions: bankTransactions.map((bt) => dbToType<BankTransaction>(bt)),
       auditLog: auditLog.map((al) => dbToType<AuditLogEntry>(al)),
@@ -205,17 +230,24 @@ export const appStore = {
     // Persist to database asynchronously (fire and forget)
     ;(async () => {
       try {
-        const table = entityToTable[entity]
+        const table = entityToTable[entity] as DbEntityType
         let dbData: Record<string, unknown>
         
         if (entity === 'costs') {
           dbData = await typeCostToDb(newItem as unknown as Record<string, unknown>, db)
         } else {
-          const { typeToDb } = await import('./db-helpers')
           dbData = typeToDb(newItem as unknown as Record<string, unknown>)
         }
         
-        await db[table as keyof typeof db].create(dbData)
+        await dbCreate(table, dbData)
+        
+        // Handle member_parents relationships for members
+        if (entity === 'members') {
+          const member = newItem as unknown as Member
+          if (member.parentIds && member.parentIds.length > 0) {
+            await db.memberParents.setMemberParents(member.id, member.parentIds)
+          }
+        }
       } catch (error) {
         console.error(`Failed to create ${entity} in database:`, error)
         // Note: We don't rollback cache here to keep API synchronous
@@ -251,18 +283,25 @@ export const appStore = {
     // Persist to database asynchronously (fire and forget)
     ;(async () => {
       try {
-        const table = entityToTable[entity]
+        const table = entityToTable[entity] as DbEntityType
         let dbData: Record<string, unknown>
         
         if (entity === 'costs') {
           const updatedItem = { ...oldItem, ...patch } as unknown as Record<string, unknown>
           dbData = await typeCostToDb(updatedItem, db)
         } else {
-          const { typeToDb } = await import('./db-helpers')
           dbData = typeToDb(patch as Record<string, unknown>)
         }
         
-        await db[table as keyof typeof db].update(id, dbData)
+        await dbUpdate(table, id, dbData)
+        
+        // Handle member_parents relationships for members
+        if (entity === 'members') {
+          const member = { ...oldItem, ...patch } as unknown as Member
+          if (member.parentIds !== undefined) {
+            await db.memberParents.setMemberParents(id, member.parentIds)
+          }
+        }
       } catch (error) {
         console.error(`Failed to update ${entity} in database:`, error)
       }
@@ -290,8 +329,8 @@ export const appStore = {
     // Persist to database asynchronously (fire and forget)
     ;(async () => {
       try {
-        const table = entityToTable[entity]
-        await db[table as keyof typeof db].delete(id)
+        const table = entityToTable[entity] as DbEntityType
+        await dbRemove(table, id)
       } catch (error) {
         console.error(`Failed to delete ${entity} from database:`, error)
       }

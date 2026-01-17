@@ -1,12 +1,13 @@
 import { useState } from 'react'
 import { MemberList, MemberForm, ParentList, ParentForm, CoachList, CoachForm, RenameGroupDialog } from '@/components/members'
+import type { MemberFormSaveData } from '@/components/members/MemberForm'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui'
 import type { Member, Parent, Coach } from '@/types'
 import { useMembers, useParents, useCoaches, useGroups } from '@/data/useAppStore'
 
 export function ClaniInSkupinePage() {
   const [mode, setMode] = useState<'members' | 'parents' | 'coaches'>('members')
-  const { members, create: createMember, update: updateMember, remove: deleteMember, set: setMembers } = useMembers()
+  const { members, create: createMember, update: updateMember, remove: deleteMember } = useMembers()
   const { parents, create: createParent, update: updateParent, remove: deleteParent } = useParents()
   const { groups, create: createGroup, update: updateGroup, remove: deleteGroup } = useGroups()
   const { coaches, create: createCoach, update: updateCoach, remove: deleteCoach } = useCoaches()
@@ -40,13 +41,34 @@ export function ClaniInSkupinePage() {
     }
   }
 
-  const handleSaveMember = (memberData: Omit<Member, 'id'>) => {
+  const handleSaveMember = (memberData: MemberFormSaveData) => {
     if (editingMember) {
       // Update existing member
-      updateMember(editingMember.id, memberData)
+      const { createSelfAsParent, ...updateData } = memberData
+      updateMember(editingMember.id, updateData)
     } else {
       // Create new member
-      createMember(memberData)
+      const { createSelfAsParent, ...memberCreateData } = memberData
+      
+      if (createSelfAsParent) {
+        // Create a parent record for this self-paying member
+        const newParent = createParent({
+          firstName: memberCreateData.firstName,
+          lastName: memberCreateData.lastName,
+          email: '',
+          phone: '',
+        })
+        
+        // Create member linked to the new parent
+        createMember({
+          ...memberCreateData,
+          parentId: newParent.id,
+          parentIds: [newParent.id],
+        })
+      } else {
+        // Regular member creation
+        createMember(memberCreateData)
+      }
     }
     setMemberFormOpen(false)
     setEditingMember(null)
@@ -57,17 +79,17 @@ export function ClaniInSkupinePage() {
   }
 
   const handleBulkStatusChange = (memberIds: string[], status: 'active' | 'inactive' | 'archived') => {
-    const updatedMembers = members.map((m) =>
-      memberIds.includes(m.id) ? { ...m, status } : m
-    )
-    setMembers(updatedMembers)
+    // Persist each member update individually to SQLite
+    memberIds.forEach((id) => {
+      updateMember(id, { status })
+    })
   }
 
   const handleBulkAssignGroup = (memberIds: string[], groupId: string) => {
-    const updatedMembers = members.map((m) =>
-      memberIds.includes(m.id) ? { ...m, groupId } : m
-    )
-    setMembers(updatedMembers)
+    // Persist each member update individually to SQLite
+    memberIds.forEach((id) => {
+      updateMember(id, { groupId })
+    })
   }
 
   const handleCreateParent = () => {
@@ -82,7 +104,12 @@ export function ClaniInSkupinePage() {
   }
 
   const handleDeleteParent = (id: string) => {
-    const memberCount = members.filter((m) => m.parentId === id).length
+    const memberCount = members.filter((m) => {
+      const memberParentIds = m.parentIds && m.parentIds.length > 0
+        ? m.parentIds
+        : (m.parentId ? [m.parentId] : [])
+      return memberParentIds.includes(id)
+    }).length
     if (memberCount > 0) {
       alert(`Ne morete izbrisati starša, ker je povezan z ${memberCount} ${memberCount === 1 ? 'tekmovalcem' : 'tekmovalci'}.`)
       return

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { Member } from '@/types'
-import { Button, Input, Label, Select } from '@/components/ui'
+import { Button, Input, Label, Select, Checkbox, Textarea } from '@/components/ui'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/Dialog'
 
 export interface BulkBillingFormProps {
@@ -16,6 +16,12 @@ export interface BulkBillingFormProps {
     amount: number
     costType: string
     dueDate: string | null
+    // Ponavljajoči stroški
+    isRecurring?: boolean
+    recurringPeriod?: 'monthly' | 'yearly' | 'weekly' | 'quarterly' | null
+    recurringStartDate?: string | null
+    recurringEndDate?: string | null
+    recurringDayOfMonth?: number | null
   }) => void
 }
 
@@ -32,6 +38,12 @@ export function BulkBillingForm({
   const [amount, setAmount] = useState('')
   const [costType, setCostType] = useState('')
   const [dueDate, setDueDate] = useState('')
+  // Ponavljajoči stroški
+  const [isRecurring, setIsRecurring] = useState(false)
+  const [recurringPeriod, setRecurringPeriod] = useState<'monthly' | 'yearly' | 'weekly' | 'quarterly' | ''>('')
+  const [recurringStartDate, setRecurringStartDate] = useState('')
+  const [recurringEndDate, setRecurringEndDate] = useState('')
+  const [recurringDayOfMonth, setRecurringDayOfMonth] = useState('')
 
   const selectedMembers = members.filter((m) => selectedMemberIds.includes(m.id))
 
@@ -54,6 +66,12 @@ export function BulkBillingForm({
       amount: amountNum,
       costType,
       dueDate: dueDate || null,
+      // Ponavljajoči stroški
+      isRecurring: isRecurring,
+      recurringPeriod: isRecurring && recurringPeriod ? recurringPeriod as 'monthly' | 'yearly' | 'weekly' | 'quarterly' : null,
+      recurringStartDate: isRecurring && recurringStartDate ? recurringStartDate : null,
+      recurringEndDate: isRecurring && recurringEndDate ? recurringEndDate : null,
+      recurringDayOfMonth: isRecurring && recurringDayOfMonth ? parseInt(recurringDayOfMonth, 10) : null,
     })
 
     // Reset form
@@ -62,6 +80,11 @@ export function BulkBillingForm({
     setAmount('')
     setCostType('')
     setDueDate('')
+    setIsRecurring(false)
+    setRecurringPeriod('')
+    setRecurringStartDate('')
+    setRecurringEndDate('')
+    setRecurringDayOfMonth('')
     onOpenChange(false)
   }
 
@@ -104,13 +127,12 @@ export function BulkBillingForm({
 
           <div className="space-y-2">
             <Label htmlFor="description">Opis</Label>
-            <textarea
+            <Textarea
               id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Dodatni opis stroška..."
               rows={3}
-              className="flex min-h-[80px] w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm ring-offset-white placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-800 dark:ring-offset-slate-950 dark:placeholder:text-slate-400 dark:focus-visible:ring-blue-400"
             />
           </div>
 
@@ -162,6 +184,85 @@ export function BulkBillingForm({
               value={dueDate}
               onChange={(e) => setDueDate(e.target.value)}
             />
+          </div>
+
+          {/* Ponavljajoči stroški */}
+          <div className="pt-4 border-t border-slate-200 dark:border-slate-700 space-y-4">
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="isRecurring"
+                checked={isRecurring}
+                onCheckedChange={setIsRecurring}
+              />
+              <Label htmlFor="isRecurring" className="font-medium cursor-pointer">
+                Ponavljajoči strošek
+              </Label>
+            </div>
+
+            {isRecurring && (
+              <div className="space-y-4 pl-6 border-l-2 border-slate-200 dark:border-slate-700">
+                <div className="space-y-2">
+                  <Label htmlFor="recurringPeriod">
+                    Obdobje ponavljanja <span className="text-red-500">*</span>
+                  </Label>
+                  <Select
+                    id="recurringPeriod"
+                    value={recurringPeriod}
+                    onValueChange={(value) => setRecurringPeriod(value as typeof recurringPeriod)}
+                    required={isRecurring}
+                  >
+                    <option value="">Izberite obdobje</option>
+                    <option value="monthly">Mesečno</option>
+                    <option value="quarterly">Četrtletno</option>
+                    <option value="yearly">Letno</option>
+                    <option value="weekly">Tedensko</option>
+                  </Select>
+                </div>
+
+                {recurringPeriod === 'monthly' && (
+                  <div className="space-y-2">
+                    <Label htmlFor="recurringDayOfMonth">Dan v mesecu</Label>
+                    <Input
+                      id="recurringDayOfMonth"
+                      type="number"
+                      min="1"
+                      max="31"
+                      value={recurringDayOfMonth}
+                      onChange={(e) => setRecurringDayOfMonth(e.target.value)}
+                      placeholder="npr. 1 (vsak 1. v mesecu)"
+                    />
+                    <p className="text-xs text-slate-500">
+                      Vnesite dan v mesecu (1-31). Strošek bo generiran vsak mesec na ta dan.
+                    </p>
+                  </div>
+                )}
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="recurringStartDate">Datum začetka</Label>
+                    <Input
+                      id="recurringStartDate"
+                      type="date"
+                      value={recurringStartDate}
+                      onChange={(e) => setRecurringStartDate(e.target.value)}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="recurringEndDate">Datum konca (opcijsko)</Label>
+                    <Input
+                      id="recurringEndDate"
+                      type="date"
+                      value={recurringEndDate}
+                      onChange={(e) => setRecurringEndDate(e.target.value)}
+                    />
+                    <p className="text-xs text-slate-500">
+                      Pustite prazno za neskončno ponavljanje
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">

@@ -145,7 +145,7 @@ function generateNextCost(template: Cost, allCosts: Cost[]): Cost | null {
   // Generiraj naslednji strošek
   const nextCost: Omit<Cost, 'id' | 'createdAt'> = {
     memberId: template.memberId,
-    title: generateTitleForPeriod(template.title, nextDueDate, template.recurringPeriod),
+    title: generateTitleForPeriod(template.title, nextDueDate, template.recurringPeriod || 'monthly'),
     description: template.description,
     amount: template.amount,
     costType: template.costType,
@@ -168,7 +168,7 @@ function generateNextCost(template: Cost, allCosts: Cost[]): Cost | null {
 function generateTitleForPeriod(
   baseTitle: string,
   dueDate: string,
-  period: string
+  _period: string
 ): string {
   const date = new Date(dueDate)
   
@@ -215,7 +215,6 @@ export async function generateRecurringCosts(): Promise<number> {
     // Generiraj stroške, dokler je potrebno
     // Omejimo na 12 mesečnih generiranj naenkrat, da ne generiramo preveč
     let maxGenerations = 12
-    let lastGenerated: Cost | null = null
 
     while (maxGenerations > 0) {
       const nextCost = generateNextCost(template, allCosts)
@@ -234,9 +233,8 @@ export async function generateRecurringCosts(): Promise<number> {
       }
 
       try {
-        await appStore.create('costs', nextCost)
+        appStore.create('costs', nextCost)
         generatedCount++
-        lastGenerated = nextCost as Cost
         // Dodaj v lokalni seznam za naslednje preverjanje
         allCosts.push(nextCost as Cost)
       } catch (error) {

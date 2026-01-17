@@ -239,4 +239,17 @@ export const db = {
     create: (data: Omit<EntityData, 'id'> & { id?: string }) =>
       create('audit_log', data),
   },
+
+  // Member-Parent relationships
+  memberParents: {
+    getMemberParents: async (memberId: string): Promise<string[]> => {
+      return await invoke<string[]>('db_get_member_parents', { memberId })
+    },
+    setMemberParents: async (memberId: string, parentIds: string[]): Promise<void> => {
+      await invoke('db_set_member_parents', { memberId, parentIds })
+    },
+    getParentMembers: async (parentId: string): Promise<string[]> => {
+      return await invoke<string[]>('db_get_parent_members', { parentId })
+    },
+  },
 }

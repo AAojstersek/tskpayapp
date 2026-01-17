@@ -67,6 +67,18 @@ CREATE INDEX IF NOT EXISTS idx_members_group ON members(group_id);
 CREATE INDEX IF NOT EXISTS idx_members_status ON members(status);
 CREATE INDEX IF NOT EXISTS idx_members_name ON members(first_name, last_name);
 
+-- Member-Parent Relationship (Many-to-Many)
+CREATE TABLE IF NOT EXISTS member_parents (
+  id TEXT PRIMARY KEY,
+  member_id TEXT NOT NULL REFERENCES members(id) ON DELETE CASCADE,
+  parent_id TEXT NOT NULL REFERENCES parents(id) ON DELETE CASCADE,
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  UNIQUE(member_id, parent_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_member_parents_member ON member_parents(member_id);
+CREATE INDEX IF NOT EXISTS idx_member_parents_parent ON member_parents(parent_id);
+
 -- Cost Types (Vrste stroškov)
 CREATE TABLE IF NOT EXISTS cost_types (
   id TEXT PRIMARY KEY,
@@ -122,7 +134,7 @@ CREATE INDEX IF NOT EXISTS idx_bank_statements_imported ON bank_statements(impor
 -- Payments (Plačila)
 CREATE TABLE IF NOT EXISTS payments (
   id TEXT PRIMARY KEY,
-  parent_id TEXT NOT NULL REFERENCES parents(id) ON DELETE RESTRICT,
+  parent_id TEXT REFERENCES parents(id) ON DELETE RESTRICT, -- Can be NULL for unmatched payments
   amount REAL NOT NULL CHECK (amount > 0),
   payment_date TEXT NOT NULL,
   payment_method TEXT NOT NULL CHECK (payment_method IN ('bank_transfer', 'cash', 'card', 'other')),
@@ -130,6 +142,8 @@ CREATE TABLE IF NOT EXISTS payments (
   notes TEXT DEFAULT '',
   imported_from_bank INTEGER NOT NULL DEFAULT 0,
   bank_transaction_id TEXT REFERENCES bank_transactions(id) ON DELETE SET NULL,
+  status TEXT NOT NULL CHECK (status IN ('pending', 'allocated', 'confirmed')) DEFAULT 'pending',
+  payer_name TEXT, -- For unmatched payments where parent is not yet linked
   created_at TEXT NOT NULL DEFAULT (datetime('now')),
   updated_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
@@ -290,3 +304,11 @@ INSERT OR IGNORE INTO cost_types (id, name) VALUES
   ('ct-priprave', 'Priprave'),
   ('ct-modre-kartice', 'Modre kartice'),
   ('ct-zdravniski', 'Zdravniški pregledi');
+
+-- Special coach for "Samo člani" group
+INSERT OR IGNORE INTO coaches (id, name, email, phone) VALUES
+  ('coa-samo-clani', 'Članstvo', NULL, NULL);
+
+-- Special group for club members who pay for themselves (not tekmovalci/children)
+INSERT OR IGNORE INTO groups (id, name, coach_id) VALUES
+  ('grp-samo-clani', 'Samo člani', 'coa-samo-clani');

@@ -2,14 +2,15 @@
  * Helper functions to convert between database format (snake_case) and TypeScript types (camelCase)
  */
 
-export function dbToType<T extends Record<string, unknown>>(
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function dbToType<T = Record<string, any>>(
   dbData: Record<string, unknown>
 ): T {
   const converted: Record<string, unknown> = {}
   
   for (const [key, value] of Object.entries(dbData)) {
     // Convert snake_case to camelCase
-    const camelKey = key.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase())
+    const camelKey = key.replace(/_([a-z])/g, (_, letter: string) => letter.toUpperCase())
     
     // Handle boolean conversion (SQLite stores as INTEGER 0/1)
     if (value === 0 || value === 1) {
@@ -26,14 +27,14 @@ export function dbToType<T extends Record<string, unknown>>(
   return converted as T
 }
 
-export function typeToDb<T extends Record<string, unknown>>(
-  typeData: T
+export function typeToDb(
+  typeData: Record<string, unknown>
 ): Record<string, unknown> {
   const converted: Record<string, unknown> = {}
   
   for (const [key, value] of Object.entries(typeData)) {
     // Convert camelCase to snake_case
-    const snakeKey = key.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`)
+    const snakeKey = key.replace(/[A-Z]/g, (letter: string) => `_${letter.toLowerCase()}`)
     
     // Handle boolean conversion (SQLite stores as INTEGER 0/1)
     if (typeof value === 'boolean') {
@@ -54,7 +55,7 @@ export function typeToDb<T extends Record<string, unknown>>(
  * (needs special handling for cost_type_id -> costType)
  */
 export function dbCostToType(dbCost: Record<string, unknown>, costTypeName: string): Record<string, unknown> {
-  const converted = dbToType(dbCost)
+  const converted = dbToType<Record<string, unknown>>(dbCost)
   // Replace cost_type_id with costType (string name)
   delete converted.costTypeId
   converted.costType = costTypeName

@@ -272,20 +272,29 @@ export function MemberList({
                   </td>
                 </tr>
               ) : (
-                filteredMembers.map((member) => (
-                  <MemberRow
-                    key={member.id}
-                    member={member}
-                    parent={parentsMap.get(member.parentId)}
-                    group={groupsMap.get(member.groupId)}
-                    isSelected={selectedIds.has(member.id)}
-                    onSelect={handleSelect}
-                    onView={onViewMember}
-                    onEdit={onEditMember}
-                    onDelete={onDeleteMember}
-                    onStatusChange={onStatusChange}
-                  />
-                ))
+                filteredMembers.map((member) => {
+                  const memberParentIds = member.parentIds && member.parentIds.length > 0
+                    ? member.parentIds
+                    : (member.parentId ? [member.parentId] : [])
+                  const memberParents = memberParentIds
+                    .map((pid) => parentsMap.get(pid))
+                    .filter((p): p is Parent => p !== undefined)
+                  
+                  return (
+                    <MemberRow
+                      key={member.id}
+                      member={member}
+                      parents={memberParents}
+                      group={groupsMap.get(member.groupId)}
+                      isSelected={selectedIds.has(member.id)}
+                      onSelect={handleSelect}
+                      onView={onViewMember}
+                      onEdit={onEditMember}
+                      onDelete={onDeleteMember}
+                      onStatusChange={onStatusChange}
+                    />
+                  )
+                })
               )}
             </tbody>
           </table>

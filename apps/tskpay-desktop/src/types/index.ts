@@ -12,7 +12,8 @@ export interface Member {
   dateOfBirth: string
   status: 'active' | 'inactive' | 'archived'
   notes: string
-  parentId: string
+  parentId?: string // Glavni starš (ohranjeno za kompatibilnost)
+  parentIds: string[] // Vsi starši tekmovalca
   groupId: string
 }
 
@@ -86,7 +87,7 @@ export type CostType =
  */
 export interface Payment {
   id: string
-  parentId: string
+  parentId: string | null // Can be null for unmatched payments
   amount: number
   paymentDate: string
   paymentMethod: 'bank_transfer' | 'cash' | 'card' | 'other'
@@ -94,6 +95,19 @@ export interface Payment {
   notes: string
   importedFromBank: boolean
   bankTransactionId: string | null
+  createdAt: string
+  status: 'pending' | 'allocated' | 'confirmed' // pending = unmatched, allocated = linked to costs, confirmed = fully processed
+  payerName?: string // For unmatched payments where parent is not yet linked
+}
+
+/**
+ * Povezava plačila s stroškom - omogoča delitev plačila na več stroškov.
+ */
+export interface PaymentAllocation {
+  id: string
+  paymentId: string
+  costId: string
+  allocatedAmount: number
   createdAt: string
 }
 

@@ -66,6 +66,12 @@ export function StroskiInObračunavanjePage() {
     amount: number
     costType: string
     dueDate: string | null
+    // Ponavljajoči stroški
+    isRecurring?: boolean
+    recurringPeriod?: 'monthly' | 'yearly' | 'weekly' | 'quarterly' | null
+    recurringStartDate?: string | null
+    recurringEndDate?: string | null
+    recurringDayOfMonth?: number | null
   }) => {
     bulkData.memberIds.forEach((memberId) => {
       createCost({
@@ -76,6 +82,13 @@ export function StroskiInObračunavanjePage() {
         costType: bulkData.costType,
         dueDate: bulkData.dueDate,
         status: 'pending',
+        // Ponavljajoči stroški
+        isRecurring: bulkData.isRecurring || false,
+        recurringPeriod: bulkData.recurringPeriod || null,
+        recurringStartDate: bulkData.recurringStartDate || null,
+        recurringEndDate: bulkData.recurringEndDate || null,
+        recurringDayOfMonth: bulkData.recurringDayOfMonth || null,
+        recurringTemplateId: null, // Originalni template stroški nimajo template ID-ja
       })
     })
 

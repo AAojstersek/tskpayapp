@@ -8,6 +8,7 @@ import type {
   Group,
   Cost,
   Payment,
+  PaymentAllocation,
   BankStatement,
   BankTransaction,
   AuditLogEntry,
@@ -107,6 +108,22 @@ export function usePayments() {
     update: (id: string, data: Partial<Payment>) => appStore.update('payments', id, data),
     remove: (id: string) => appStore.remove('payments', id),
     set: (items: Payment[]) => appStore.set('payments', items),
+  }
+}
+
+export function usePaymentAllocations() {
+  const paymentAllocations = useAppSelector((state) => state.paymentAllocations)
+  return {
+    paymentAllocations,
+    create: (data: Omit<PaymentAllocation, 'id' | 'createdAt'>) =>
+      appStore.create('paymentAllocations', {
+        ...data,
+        createdAt: new Date().toISOString(),
+      }),
+    update: (id: string, data: Partial<PaymentAllocation>) =>
+      appStore.update('paymentAllocations', id, data),
+    remove: (id: string) => appStore.remove('paymentAllocations', id),
+    set: (items: PaymentAllocation[]) => appStore.set('paymentAllocations', items),
   }
 }
 

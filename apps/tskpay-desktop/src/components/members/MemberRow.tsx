@@ -10,7 +10,7 @@ import {
 
 interface MemberRowProps {
   member: Member
-  parent: Parent | undefined
+  parents: Parent[]
   group: Group | undefined
   isSelected: boolean
   onSelect: (id: string, selected: boolean) => void
@@ -22,7 +22,7 @@ interface MemberRowProps {
 
 export function MemberRow({
   member,
-  parent,
+  parents,
   group,
   isSelected,
   onSelect,
@@ -106,9 +106,16 @@ export function MemberRow({
         </div>
       </td>
       <td className="px-4 py-3">
-        {parent ? (
-          <div className="text-sm text-slate-700 dark:text-slate-300">
-            {parent.firstName} {parent.lastName}
+        {parents.length > 0 ? (
+          <div className="flex flex-wrap gap-1">
+            {parents.map((parent) => (
+              <span
+                key={parent.id}
+                className="inline-block px-2 py-1 text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 rounded"
+              >
+                {parent.firstName} {parent.lastName}
+              </span>
+            ))}
           </div>
         ) : (
           <span className="text-sm text-slate-400">Ni dodeljen</span>

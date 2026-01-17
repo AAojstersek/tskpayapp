@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react'
 import type { Cost } from '@/types'
 import { CostRow } from './CostRow'
-import { Button, Badge, Select, Tabs, TabsList, TabsTrigger } from '@/components/ui'
+import { Button, Badge, Select, Tabs, TabsList, TabsTrigger, Label } from '@/components/ui'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,6 +18,7 @@ export interface CostListProps {
     firstName: string
     lastName: string
     groupId: string
+    status: 'active' | 'inactive' | 'archived'
   }>
   groups?: Array<{
     id: string
@@ -89,16 +90,32 @@ export function CostList({
     return filtered
   }, [costs, statusFilter, costTypeFilter, groupFilter, members])
 
-  const costsByMember = useMemo(() => {
-    const grouped = new Map<string, typeof filteredCosts>()
-    filteredCosts.forEach((cost) => {
-      if (!grouped.has(cost.memberId)) {
-        grouped.set(cost.memberId, [])
+  // Prikazati vse aktivne tekmovalce (ne samo tiste s stroški)
+  const displayedMembers = useMemo(() => {
+    let filtered = members.filter((m) => m.status === 'active')
+    
+    // Filtrirati po skupini
+    if (groupFilter) {
+      filtered = filtered.filter((m) => m.groupId === groupFilter)
+    }
+    
+    return filtered
+  }, [members, groupFilter])
+
+  // Za vsakega tekmovalca pridobiti stroške
+  const membersWithCosts = useMemo(() => {
+    return displayedMembers.map((member) => {
+      const memberCosts = filteredCosts.filter((c) => c.memberId === member.id)
+      return {
+        member,
+        costs: memberCosts,
+        totalAmount: memberCosts.reduce((sum, c) => sum + c.amount, 0),
+        pendingAmount: memberCosts
+          .filter((c) => c.status === 'pending')
+          .reduce((sum, c) => sum + c.amount, 0),
       }
-      grouped.get(cost.memberId)!.push(cost)
     })
-    return grouped
-  }, [filteredCosts])
+  }, [displayedMembers, filteredCosts])
 
   const handleSelectMember = (memberId: string, selected: boolean) => {
     const newSelected = new Set(selectedMemberIds)
@@ -106,6 +123,21 @@ export function CostList({
       newSelected.add(memberId)
     } else {
       newSelected.delete(memberId)
+    }
+    setSelectedMemberIds(newSelected)
+  }
+
+  // "Select All" funkcionalnost
+  const allSelected = displayedMembers.length > 0 && 
+    displayedMembers.every((m) => selectedMemberIds.has(m.id))
+  const someSelected = displayedMembers.some((m) => selectedMemberIds.has(m.id)) && !allSelected
+
+  const handleSelectAll = (checked: boolean) => {
+    const newSelected = new Set(selectedMemberIds)
+    if (checked) {
+      displayedMembers.forEach((m) => newSelected.add(m.id))
+    } else {
+      displayedMembers.forEach((m) => newSelected.delete(m.id))
     }
     setSelectedMemberIds(newSelected)
   }
@@ -285,107 +317,120 @@ export function CostList({
 
       {viewMode === 'by-member' && (
         <div className="space-y-4">
-          {Array.from(costsByMember.entries()).length === 0 ? (
+          {displayedMembers.length === 0 ? (
             <div className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-12 text-center">
-              {costs.length === 0 ? (
-                <div className="space-y-2">
-                  <p className="text-slate-500 dark:text-slate-400">Ni stroškov</p>
-                  <p className="text-sm text-slate-400">Dodajte prvi strošek, da začnete</p>
-                  <Button onClick={onCreateCost} className="mt-4">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Dodaj strošek
-                  </Button>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  <p className="text-slate-500 dark:text-slate-400">Ni stroškov, ki bi ustrezali filtrom.</p>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      onStatusFilterChange?.('all')
-                      onCostTypeFilterChange?.(undefined)
-                      onGroupFilterChange?.(undefined)
-                    }}
-                  >
-                    Počisti filtre
-                  </Button>
-                </div>
-              )}
+              <div className="space-y-2">
+                <p className="text-slate-500 dark:text-slate-400">Ni aktivnih tekmovalcev, ki bi ustrezali filtrom.</p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    onGroupFilterChange?.(undefined)
+                  }}
+                >
+                  Počisti filtre
+                </Button>
+              </div>
             </div>
           ) : (
-            Array.from(costsByMember.entries()).map(([memberId, memberCosts]) => {
-              const member = membersMap.get(memberId)
-              const group = member ? groupsMap.get(member.groupId) : undefined
-              const isSelected = selectedMemberIds.has(memberId)
-              const totalAmount = memberCosts.reduce((sum, c) => sum + c.amount, 0)
-              const pendingAmount = memberCosts
-                .filter((c) => c.status === 'pending')
-                .reduce((sum, c) => sum + c.amount, 0)
+            <>
+              {/* Select All header */}
+              <div className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-4">
+                <div className="flex items-center gap-3">
+                  <input
+                    type="checkbox"
+                    checked={allSelected}
+                    ref={(input) => {
+                      if (input) input.indeterminate = someSelected
+                    }}
+                    onChange={(e) => handleSelectAll(e.target.checked)}
+                    className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-2 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-800"
+                  />
+                  <Label className="font-medium text-slate-900 dark:text-slate-100 cursor-pointer">
+                    Označi vse ({displayedMembers.length} tekmovalcev)
+                  </Label>
+                  {selectedMemberIds.size > 0 && (
+                    <span className="text-sm text-slate-500 dark:text-slate-400 ml-auto">
+                      Izbrano: {selectedMemberIds.size}
+                    </span>
+                  )}
+                </div>
+              </div>
 
-              return (
-                <div
-                  key={memberId}
-                  className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden"
-                >
-                  <div className="p-4 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <input
-                          type="checkbox"
-                          checked={isSelected}
-                          onChange={(e) => handleSelectMember(memberId, e.target.checked)}
-                          className="rounded border-slate-300"
-                        />
-                        <div>
-                          <div className="font-medium text-slate-900 dark:text-slate-100">
-                            {member ? `${member.firstName} ${member.lastName}` : 'Neznan tekmovalec'}
+              {membersWithCosts.map(({ member, costs: memberCosts, totalAmount, pendingAmount }) => {
+                const group = groupsMap.get(member.groupId)
+                const isSelected = selectedMemberIds.has(member.id)
+
+                return (
+                  <div
+                    key={member.id}
+                    className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden"
+                  >
+                    <div className="p-4 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={(e) => handleSelectMember(member.id, e.target.checked)}
+                            className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-2 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-800"
+                          />
+                          <div>
+                            <div className="font-medium text-slate-900 dark:text-slate-100">
+                              {member.firstName} {member.lastName}
+                            </div>
+                            {group && (
+                              <div className="text-sm text-slate-500 dark:text-slate-400">
+                                {group.name}
+                              </div>
+                            )}
                           </div>
-                          {group && (
-                            <div className="text-sm text-slate-500 dark:text-slate-400">
-                              {group.name}
+                        </div>
+                        <div className="text-right">
+                          <div className="text-sm text-slate-500 dark:text-slate-400">
+                            Skupaj: <span className="font-semibold text-slate-900 dark:text-slate-100">{totalAmount.toFixed(2)} €</span>
+                          </div>
+                          {pendingAmount > 0 && (
+                            <div className="text-sm text-amber-600 dark:text-amber-400">
+                              Odprto: {pendingAmount.toFixed(2)} €
                             </div>
                           )}
                         </div>
                       </div>
-                      <div className="text-right">
-                        <div className="text-sm text-slate-500 dark:text-slate-400">
-                          Skupaj: <span className="font-semibold text-slate-900 dark:text-slate-100">{totalAmount.toFixed(2)} €</span>
-                        </div>
-                        {pendingAmount > 0 && (
-                          <div className="text-sm text-amber-600 dark:text-amber-400">
-                            Odprto: {pendingAmount.toFixed(2)} €
-                          </div>
-                        )}
-                      </div>
                     </div>
-                  </div>
-                  <div className="overflow-x-auto">
-                    <table className="w-full">
-                      <thead className="bg-slate-50 dark:bg-slate-900/50">
-                        <tr>
-                          <th className="px-4 py-2 text-left text-xs font-medium text-slate-700 dark:text-slate-300">
-                            Strošek
-                          </th>
-                          <th className="px-4 py-2 text-left text-xs font-medium text-slate-700 dark:text-slate-300">
-                            Vrsta
-                          </th>
-                          <th className="px-4 py-2 text-left text-xs font-medium text-slate-700 dark:text-slate-300">
-                            Znesek
-                          </th>
-                          <th className="px-4 py-2 text-left text-xs font-medium text-slate-700 dark:text-slate-300">
-                            Rok
-                          </th>
-                          <th className="px-4 py-2 text-left text-xs font-medium text-slate-700 dark:text-slate-300">
-                            Status
-                          </th>
-                          <th className="px-4 py-2 text-right text-xs font-medium text-slate-700 dark:text-slate-300">
-                            Akcije
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {memberCosts.map((cost) => (
+                    <div className="overflow-x-auto">
+                      <table className="w-full">
+                        <thead className="bg-slate-50 dark:bg-slate-900/50">
+                          <tr>
+                            <th className="px-4 py-2 text-left text-xs font-medium text-slate-700 dark:text-slate-300">
+                              Strošek
+                            </th>
+                            <th className="px-4 py-2 text-left text-xs font-medium text-slate-700 dark:text-slate-300">
+                              Vrsta
+                            </th>
+                            <th className="px-4 py-2 text-left text-xs font-medium text-slate-700 dark:text-slate-300">
+                              Znesek
+                            </th>
+                            <th className="px-4 py-2 text-left text-xs font-medium text-slate-700 dark:text-slate-300">
+                              Rok
+                            </th>
+                            <th className="px-4 py-2 text-left text-xs font-medium text-slate-700 dark:text-slate-300">
+                              Status
+                            </th>
+                            <th className="px-4 py-2 text-right text-xs font-medium text-slate-700 dark:text-slate-300">
+                              Akcije
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {memberCosts.length === 0 ? (
+                            <tr>
+                              <td colSpan={6} className="px-4 py-8 text-center text-sm text-slate-500 dark:text-slate-400">
+                                Ni stroškov
+                              </td>
+                            </tr>
+                          ) : (
+                            memberCosts.map((cost) => (
                           <tr
                             key={cost.id}
                             className="border-b border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
@@ -466,13 +511,15 @@ export function CostList({
                               </DropdownMenu>
                             </td>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                            ))
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
-                </div>
-              )
-            })
+                )
+              })}
+            </>
           )}
         </div>
       )}
