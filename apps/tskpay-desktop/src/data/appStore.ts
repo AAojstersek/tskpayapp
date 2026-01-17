@@ -252,12 +252,15 @@ export const appStore = {
         let dbData: Record<string, unknown>
         
         if (entity === 'costs') {
+          console.log(`[appStore.create] Creating cost:`, newItem)
           dbData = await typeCostToDb(newItem as unknown as Record<string, unknown>, db)
+          console.log(`[appStore.create] Converted to DB format:`, dbData)
         } else {
           dbData = typeToDb(newItem as unknown as Record<string, unknown>)
         }
         
         await dbCreate(table, dbData)
+        console.log(`[appStore.create] Successfully saved ${entity} to database`)
         
         // Handle member_parents relationships for members
         if (entity === 'members') {
@@ -267,7 +270,7 @@ export const appStore = {
           }
         }
       } catch (error) {
-        console.error(`Failed to create ${entity} in database:`, error)
+        console.error(`[appStore.create] Failed to create ${entity} in database:`, error)
         // Note: We don't rollback cache here to keep API synchronous
         // In production, you might want to show a user notification
       }

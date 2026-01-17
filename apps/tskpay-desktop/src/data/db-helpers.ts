@@ -75,9 +75,14 @@ export async function typeCostToDb(
   const costTypes = await db.costTypes.getAll()
   const costType = costTypes.find((ct) => ct.name === cost.costType)
   
+  // Always remove the costType field (not valid in DB)
+  delete converted.cost_type
+  
   if (costType) {
-    delete converted.costType
     converted.cost_type_id = costType.id
+  } else {
+    // Log error but don't throw - let DB constraint catch it
+    console.error(`[typeCostToDb] Cost type not found: "${cost.costType}". Available: ${costTypes.map(ct => ct.name).join(', ')}`)
   }
   
   return converted

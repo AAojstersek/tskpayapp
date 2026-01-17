@@ -137,6 +137,8 @@ export interface BankTransaction {
   description: string
   reference: string | null
   accountNumber: string
+  payerName: string
+  bankReference: string | null
   matchedParentId: string | null
   matchConfidence: 'high' | 'medium' | 'low' | null
   status: 'matched' | 'unmatched' | 'confirmed'

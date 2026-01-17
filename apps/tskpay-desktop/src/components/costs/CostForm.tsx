@@ -101,7 +101,6 @@ export function CostForm({
   }
 
   const isEditMode = !!cost
-  const canEditAmount = !isEditMode // Amount cannot be edited after creation
 
   // Filter members by selected group if a group filter is needed
   const availableMembers = members
@@ -175,11 +174,7 @@ export function CostForm({
                 onChange={(e) => setAmount(e.target.value)}
                 placeholder="0.00"
                 required
-                disabled={!canEditAmount}
               />
-              {isEditMode && (
-                <p className="text-xs text-slate-500">Znesek se ne more spremeniti po ustvarjanju</p>
-              )}
             </div>
 
             <div className="space-y-2">

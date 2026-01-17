@@ -255,7 +255,7 @@ export function TransactionList({
                   Opis
                 </th>
                 <th className="px-4 py-3 text-left text-sm font-medium text-slate-700 dark:text-slate-300">
-                  Referenca
+                  Plačnik
                 </th>
                 <th className="px-4 py-3 text-left text-sm font-medium text-slate-700 dark:text-slate-300">
                   Starš

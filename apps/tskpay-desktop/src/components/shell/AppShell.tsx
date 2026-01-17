@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { MainNav } from './MainNav'
 import { UserMenu } from './UserMenu'
+import clubLogoDark from '@/assets/club-logo-dark.png'
 
 export interface AppShellProps {
   children: React.ReactNode
@@ -34,9 +35,11 @@ export function AppShell({
         <div className="flex flex-col h-full">
           {/* Logo/Header */}
           <div className="flex items-center justify-between h-16 px-6 border-b border-slate-200 dark:border-slate-700">
-            <h1 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
-              tskPay
-            </h1>
+            <img
+              src={clubLogoDark}
+              alt="TSK JUB Dol"
+              className="h-[60px] w-auto max-w-[280px] object-contain"
+            />
             <button
               onClick={() => setSidebarOpen(false)}
               className="lg:hidden p-2 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
@@ -105,9 +108,11 @@ export function AppShell({
               />
             </svg>
           </button>
-          <h1 className="ml-4 text-lg font-semibold text-slate-900 dark:text-slate-100">
-            tskPay
-          </h1>
+          <img
+            src={clubLogoDark}
+            alt="TSK JUB Dol"
+            className="ml-3 h-12 w-auto max-w-[300px] object-contain"
+          />
         </header>
 
         {/* Content Area */}

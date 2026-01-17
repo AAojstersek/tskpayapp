@@ -86,8 +86,8 @@ export function TransactionRow({
       <td className="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">
         {transaction.description}
       </td>
-      <td className="px-4 py-3 text-sm text-slate-500 dark:text-slate-500">
-        {transaction.reference || '-'}
+      <td className="px-4 py-3 text-sm text-slate-600 dark:text-slate-300">
+        {transaction.payerName || 'Neznan'}
       </td>
       <td className="px-4 py-3">
         <div className="flex items-center gap-2">

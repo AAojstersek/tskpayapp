@@ -40,6 +40,8 @@ export function PlacilaInBancniUvozPage() {
   // Allocation dialog state
   const [isAllocationDialogOpen, setIsAllocationDialogOpen] = useState(false)
   const [allocatingPayment, setAllocatingPayment] = useState<Payment | null>(null)
+  // Track if the allocating payment is newly created (for rollback on cancel)
+  const [isNewPaymentPendingAllocation, setIsNewPaymentPendingAllocation] = useState(false)
   
   // Payment list filters
   const [paymentStatusFilter, setPaymentStatusFilter] = useState<'pending' | 'allocated' | 'confirmed' | 'all'>('all')
@@ -80,17 +82,19 @@ export function PlacilaInBancniUvozPage() {
         
         // Create bank transaction record
         createTransaction({
-        bankStatementId: newStatement.id,
+          bankStatementId: newStatement.id,
           transactionDate: tx.bookingDate,
           amount: tx.amount,
-          description: `${tx.payerName}${tx.description ? ': ' + tx.description : ''}`,
+          description: tx.description || '',
           reference: tx.reference,
           accountNumber: tx.payerIban || '',
+          payerName: tx.payerName || 'Neznan plačnik',
+          bankReference: tx.id || null,
           matchedParentId: matchResult.parentId,
           matchConfidence: matchResult.confidence,
           status: matchResult.parentId ? 'matched' : 'unmatched',
-        paymentId: null,
-      })
+          paymentId: null,
+        })
 
         if (matchResult.parentId) {
           matchedCount++
@@ -170,6 +174,7 @@ export function PlacilaInBancniUvozPage() {
 
     // Open allocation dialog
     setAllocatingPayment(newPayment)
+    setIsNewPaymentPendingAllocation(true)
     setIsAllocationDialogOpen(true)
   }
 
@@ -197,16 +202,50 @@ export function PlacilaInBancniUvozPage() {
     // If payment is linked to a parent, open allocation dialog
     if (newPayment.parentId) {
       setAllocatingPayment(newPayment)
+      setIsNewPaymentPendingAllocation(true)
       setIsAllocationDialogOpen(true)
     }
   }
 
   const handleOpenAllocationDialog = (payment: Payment) => {
     setAllocatingPayment(payment)
+    setIsNewPaymentPendingAllocation(false) // Not a new payment, just opening for existing
     setIsAllocationDialogOpen(true)
   }
 
+  // Handle allocation dialog close - rollback if new payment was cancelled
+  const handleAllocationDialogClose = (open: boolean) => {
+    if (!open && isNewPaymentPendingAllocation && allocatingPayment) {
+      // User cancelled allocation for a newly created payment - rollback
+      const paymentToDelete = allocatingPayment
+      
+      // Revert bank transaction status if this was imported
+      if (paymentToDelete.importedFromBank && paymentToDelete.bankTransactionId) {
+        const transaction = transactions.find((t) => t.id === paymentToDelete.bankTransactionId)
+        if (transaction) {
+          const newStatus = transaction.matchedParentId ? 'matched' : 'unmatched'
+          updateTransaction(transaction.id, {
+            status: newStatus,
+            paymentId: null,
+          })
+        }
+      }
+      
+      // Delete the uncommitted payment
+      deletePaymentWithCascade(paymentToDelete.id)
+    }
+    
+    setIsAllocationDialogOpen(open)
+    if (!open) {
+      setAllocatingPayment(null)
+      setIsNewPaymentPendingAllocation(false)
+    }
+  }
+
   const handleAllocatePayment = (paymentId: string, allocations: Array<{ costId: string; amount: number }>, parentId?: string) => {
+    // Clear the pending flag since allocation is being confirmed
+    setIsNewPaymentPendingAllocation(false)
+    
     // Create allocation records
     allocations.forEach((allocation) => {
       createAllocation({
@@ -647,7 +686,7 @@ export function PlacilaInBancniUvozPage() {
         parents={parents}
         existingAllocations={allocatingPayment ? getPaymentAllocations(allocatingPayment.id) : []}
         open={isAllocationDialogOpen}
-        onOpenChange={setIsAllocationDialogOpen}
+        onOpenChange={handleAllocationDialogClose}
         onAllocate={handleAllocatePayment}
       />
     </div>
