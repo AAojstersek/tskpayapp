@@ -108,6 +108,13 @@ export function usePayments() {
     update: (id: string, data: Partial<Payment>) => appStore.update('payments', id, data),
     remove: (id: string) => appStore.remove('payments', id),
     set: (items: Payment[]) => appStore.set('payments', items),
+    /**
+     * Delete a payment with proper cascading:
+     * - Removes allocations
+     * - Re-evaluates affected cost statuses
+     * Returns affected cost IDs and bank transaction ID for further handling
+     */
+    deleteWithCascade: (paymentId: string) => appStore.deletePayment(paymentId),
   }
 }
 

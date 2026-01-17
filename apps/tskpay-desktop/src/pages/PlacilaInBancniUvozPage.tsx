@@ -11,7 +11,7 @@ import {
   useMembers, 
   useCosts 
 } from '@/data/useAppStore'
-import { Plus, CreditCard, FileText, Link2, CheckCircle2, Clock, AlertCircle } from 'lucide-react'
+import { Plus, CreditCard, FileText, Link2, CheckCircle2, Clock, AlertCircle, Trash2 } from 'lucide-react'
 import { parseXmlFile, matchTransactionToParent } from '@/lib/xmlParser'
 
 type ViewMode = 'statements' | 'payments'
@@ -21,7 +21,7 @@ export function PlacilaInBancniUvozPage() {
   const { bankTransactions: transactions, create: createTransaction, update: updateTransaction } = useBankTransactions()
   const { parents } = useParents()
   const { members } = useMembers()
-  const { payments, create: createPayment, update: updatePayment } = usePayments()
+  const { payments, create: createPayment, update: updatePayment, deleteWithCascade: deletePaymentWithCascade } = usePayments()
   const { paymentAllocations, create: createAllocation } = usePaymentAllocations()
   const { costs, update: updateCost } = useCosts()
   
@@ -32,7 +32,7 @@ export function PlacilaInBancniUvozPage() {
   const [parentFilter, setParentFilter] = useState<string | undefined>(undefined)
   const [dateFrom, setDateFrom] = useState<string | undefined>(undefined)
   const [dateTo, setDateTo] = useState<string | undefined>(undefined)
-  
+
   // Manual payment dialog state
   const [isPaymentFormOpen, setIsPaymentFormOpen] = useState(false)
   const [editingPayment, setEditingPayment] = useState<Payment | null>(null)
@@ -80,7 +80,7 @@ export function PlacilaInBancniUvozPage() {
         
         // Create bank transaction record
         createTransaction({
-          bankStatementId: newStatement.id,
+        bankStatementId: newStatement.id,
           transactionDate: tx.bookingDate,
           amount: tx.amount,
           description: `${tx.payerName}${tx.description ? ': ' + tx.description : ''}`,
@@ -89,9 +89,9 @@ export function PlacilaInBancniUvozPage() {
           matchedParentId: matchResult.parentId,
           matchConfidence: matchResult.confidence,
           status: matchResult.parentId ? 'matched' : 'unmatched',
-          paymentId: null,
-        })
-        
+        paymentId: null,
+      })
+
         if (matchResult.parentId) {
           matchedCount++
         } else {
@@ -230,6 +230,42 @@ export function PlacilaInBancniUvozPage() {
     updatePayment(paymentId, paymentUpdate)
   }
 
+  // Delete payment handler
+  const handleDeletePayment = (payment: Payment) => {
+    // Build confirmation message
+    let confirmMessage = `Ali ste prepričani, da želite izbrisati plačilo v višini ${payment.amount.toFixed(2)} €?`
+    
+    if (payment.importedFromBank) {
+      confirmMessage += '\n\nTo plačilo je bilo uvoženo iz bančnega izpiska. Po brisanju bo bančna transakcija ponovno prikazana kot neknjižena.'
+    }
+    
+    // Get allocations for this payment
+    const relatedAllocations = paymentAllocations.filter((a) => a.paymentId === payment.id)
+    if (relatedAllocations.length > 0) {
+      confirmMessage += `\n\nPlačilo je povezano z ${relatedAllocations.length} stroški, ki bodo vrnjeni v status "Odprto".`
+    }
+    
+    if (!confirm(confirmMessage)) {
+      return
+    }
+    
+    // Delete payment with cascading (removes allocations, re-evaluates cost statuses)
+    const { bankTransactionId } = deletePaymentWithCascade(payment.id)
+    
+    // Revert bank transaction status if this was an imported payment
+    if (bankTransactionId) {
+      const transaction = transactions.find((t) => t.id === bankTransactionId)
+      if (transaction) {
+        // Revert to matched or unmatched based on parent match
+        const newStatus = transaction.matchedParentId ? 'matched' : 'unmatched'
+        updateTransaction(transaction.id, {
+          status: newStatus,
+          paymentId: null,
+        })
+      }
+    }
+  }
+
   // Filtered payments for list view
   const filteredPayments = useMemo(() => {
     let filtered = payments
@@ -309,15 +345,15 @@ export function PlacilaInBancniUvozPage() {
   return (
     <div className="max-w-7xl mx-auto p-6 space-y-6">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
-            Plačila in bančni uvoz
-          </h1>
-          <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+      <div>
+        <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
+          Plačila in bančni uvoz
+        </h1>
+        <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
             Ročni vnos plačil in avtomatski uvoz bančnih izpiskov
-          </p>
-        </div>
-        
+        </p>
+      </div>
+
         <Button 
           onClick={() => {
             setEditingPayment(null)
@@ -529,21 +565,32 @@ export function PlacilaInBancniUvozPage() {
                             {payment.notes || '-'}
                           </td>
                           <td className="px-4 py-3 text-right">
-                            {payment.status === 'pending' && (
+                            <div className="flex items-center justify-end gap-2">
+                              {payment.status === 'pending' && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => handleOpenAllocationDialog(payment)}
+                                >
+                                  <Link2 className="w-3 h-3 mr-1" />
+                                  Poveži
+                                </Button>
+                              )}
+                              {payment.status === 'confirmed' && (
+                                <span className="text-xs text-green-600 dark:text-green-400">
+                                  <CheckCircle2 className="w-4 h-4 inline" />
+                                </span>
+                              )}
                               <Button
                                 size="sm"
                                 variant="outline"
-                                onClick={() => handleOpenAllocationDialog(payment)}
+                                onClick={() => handleDeletePayment(payment)}
+                                className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-950/30"
+                                title="Izbriši plačilo"
                               >
-                                <Link2 className="w-3 h-3 mr-1" />
-                                Poveži
+                                <Trash2 className="w-3 h-3" />
                               </Button>
-                            )}
-                            {payment.status === 'confirmed' && (
-                              <span className="text-xs text-green-600 dark:text-green-400">
-                                <CheckCircle2 className="w-4 h-4 inline" />
-                              </span>
-                            )}
+                            </div>
                           </td>
                         </tr>
                       )

@@ -481,4 +481,80 @@ export const appStore = {
       }
     })()
   },
+
+  /**
+   * Delete a payment with proper cascading:
+   * 1. Remove all allocations for this payment
+   * 2. Re-evaluate affected costs (set back to 'pending' if not fully covered)
+   * 3. Revert bank transaction status if payment was imported
+   * 4. Delete the payment
+   */
+  deletePayment(paymentId: string): { affectedCostIds: string[]; bankTransactionId: string | null } {
+    ensureInitialized()
+    
+    const payment = appState.payments.find((p) => p.id === paymentId)
+    if (!payment) {
+      throw new Error(`Payment with id ${paymentId} not found`)
+    }
+    
+    // 1. Find and remove allocations for this payment
+    const affectedAllocations = appState.paymentAllocations.filter((a) => a.paymentId === paymentId)
+    const affectedCostIds = [...new Set(affectedAllocations.map((a) => a.costId))]
+    
+    // Remove allocations from cache
+    appState = {
+      ...appState,
+      paymentAllocations: appState.paymentAllocations.filter((a) => a.paymentId !== paymentId),
+    }
+    
+    // 2. Re-evaluate affected costs
+    affectedCostIds.forEach((costId) => {
+      // Calculate remaining allocations for this cost (after removing this payment's allocations)
+      const remainingAllocations = appState.paymentAllocations.filter((a) => a.costId === costId)
+      const totalRemaining = remainingAllocations.reduce((sum, a) => sum + a.allocatedAmount, 0)
+      
+      const cost = appState.costs.find((c) => c.id === costId)
+      if (cost && totalRemaining < cost.amount) {
+        // Cost is no longer fully covered, set back to pending
+        appState = {
+          ...appState,
+          costs: appState.costs.map((c) =>
+            c.id === costId ? { ...c, status: 'pending' as const } : c
+          ),
+        }
+      }
+    })
+    
+    // 3. Get bank transaction ID before removing payment
+    const bankTransactionId = payment.importedFromBank ? payment.bankTransactionId : null
+    
+    // 4. Remove payment from cache
+    appState = {
+      ...appState,
+      payments: appState.payments.filter((p) => p.id !== paymentId),
+    }
+    
+    notify()
+    
+    // Persist to database asynchronously
+    ;(async () => {
+      try {
+        // Delete allocations (note: payment_allocations has ON DELETE CASCADE, so they'll be deleted automatically)
+        // But we still need to update cost statuses in DB
+        for (const costId of affectedCostIds) {
+          const cost = appState.costs.find((c) => c.id === costId)
+          if (cost) {
+            await dbUpdate('costs' as DbEntityType, costId, typeToDb({ status: cost.status }))
+          }
+        }
+        
+        // Delete payment (this will cascade delete allocations in SQLite)
+        await dbRemove('payments' as DbEntityType, paymentId)
+      } catch (error) {
+        console.error('Failed to delete payment from database:', error)
+      }
+    })()
+    
+    return { affectedCostIds, bankTransactionId }
+  },
 }
