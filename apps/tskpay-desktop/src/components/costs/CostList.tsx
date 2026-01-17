@@ -8,7 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/DropdownMenu'
-import { Plus, Users, MoreVertical, Edit, X, Settings } from 'lucide-react'
+import { Plus, Users, MoreVertical, Edit, Trash2, Settings } from 'lucide-react'
 
 export interface CostListProps {
   costs: Cost[]
@@ -31,7 +31,7 @@ export interface CostListProps {
   onViewModeChange?: (mode: 'by-cost' | 'by-member') => void
   onCreateCost?: () => void
   onEditCost?: (id: string) => void
-  onCancelCost?: (id: string) => void
+  onDeleteCost?: (id: string) => void
   onBulkBilling?: (memberIds: string[]) => void
   onGroupFilterChange?: (groupId: string | undefined) => void
   onStatusFilterChange?: (status: 'pending' | 'paid' | 'cancelled' | 'all') => void
@@ -51,7 +51,7 @@ export function CostList({
   onViewModeChange,
   onCreateCost,
   onEditCost,
-  onCancelCost,
+  onDeleteCost,
   onBulkBilling,
   onGroupFilterChange,
   onStatusFilterChange,
@@ -304,7 +304,7 @@ export function CostList({
                         memberName={member ? `${member.firstName} ${member.lastName}` : undefined}
                         groupName={group?.name}
                         onEdit={onEditCost}
-                        onCancel={onCancelCost}
+                        onDelete={onDeleteCost}
                       />
                     )
                   })
@@ -492,19 +492,23 @@ export function CostList({
                                   </button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
-                                  {onEditCost && cost.status !== 'cancelled' && (
+                                  {onEditCost && (
                                     <DropdownMenuItem onClick={() => onEditCost(cost.id)}>
                                       <Edit className="w-3 h-3 mr-2" />
                                       Uredi
                                     </DropdownMenuItem>
                                   )}
-                                  {onCancelCost && cost.status !== 'cancelled' && (
+                                  {onDeleteCost && (
                                     <DropdownMenuItem
-                                      onClick={() => onCancelCost(cost.id)}
+                                      onClick={() => {
+                                        if (confirm(`Ali res želite izbrisati strošek "${cost.title}" (${cost.amount.toFixed(2)} €)?`)) {
+                                          onDeleteCost(cost.id)
+                                        }
+                                      }}
                                       className="text-red-600 dark:text-red-400"
                                     >
-                                      <X className="w-3 h-3 mr-2" />
-                                      Razveljavi
+                                      <Trash2 className="w-3 h-3 mr-2" />
+                                      Izbriši
                                     </DropdownMenuItem>
                                   )}
                                 </DropdownMenuContent>

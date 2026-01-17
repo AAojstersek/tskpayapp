@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useRef } from 'react'
 import { TransactionList, BankStatementList, PaymentForm, PaymentAllocationDialog } from '@/components/payments'
 import { Button, Badge, Tabs, TabsList, TabsTrigger, Select, Input } from '@/components/ui'
 import type { Payment } from '@/types'
@@ -41,7 +41,8 @@ export function PlacilaInBancniUvozPage() {
   const [isAllocationDialogOpen, setIsAllocationDialogOpen] = useState(false)
   const [allocatingPayment, setAllocatingPayment] = useState<Payment | null>(null)
   // Track if the allocating payment is newly created (for rollback on cancel)
-  const [isNewPaymentPendingAllocation, setIsNewPaymentPendingAllocation] = useState(false)
+  // Using a ref because React batches state updates and we need to check this synchronously
+  const isNewPaymentPendingRef = useRef(false)
   
   // Payment list filters
   const [paymentStatusFilter, setPaymentStatusFilter] = useState<'pending' | 'allocated' | 'confirmed' | 'all'>('all')
@@ -174,7 +175,7 @@ export function PlacilaInBancniUvozPage() {
 
     // Open allocation dialog
     setAllocatingPayment(newPayment)
-    setIsNewPaymentPendingAllocation(true)
+    isNewPaymentPendingRef.current = true
     setIsAllocationDialogOpen(true)
   }
 
@@ -202,20 +203,21 @@ export function PlacilaInBancniUvozPage() {
     // If payment is linked to a parent, open allocation dialog
     if (newPayment.parentId) {
       setAllocatingPayment(newPayment)
-      setIsNewPaymentPendingAllocation(true)
+      isNewPaymentPendingRef.current = true
       setIsAllocationDialogOpen(true)
     }
   }
 
   const handleOpenAllocationDialog = (payment: Payment) => {
     setAllocatingPayment(payment)
-    setIsNewPaymentPendingAllocation(false) // Not a new payment, just opening for existing
+    isNewPaymentPendingRef.current = false // Not a new payment, just opening for existing
     setIsAllocationDialogOpen(true)
   }
 
   // Handle allocation dialog close - rollback if new payment was cancelled
   const handleAllocationDialogClose = (open: boolean) => {
-    if (!open && isNewPaymentPendingAllocation && allocatingPayment) {
+    // Use the ref for synchronous check (state updates are batched by React)
+    if (!open && isNewPaymentPendingRef.current && allocatingPayment) {
       // User cancelled allocation for a newly created payment - rollback
       const paymentToDelete = allocatingPayment
       
@@ -238,13 +240,14 @@ export function PlacilaInBancniUvozPage() {
     setIsAllocationDialogOpen(open)
     if (!open) {
       setAllocatingPayment(null)
-      setIsNewPaymentPendingAllocation(false)
+      isNewPaymentPendingRef.current = false
     }
   }
 
   const handleAllocatePayment = (paymentId: string, allocations: Array<{ costId: string; amount: number }>, parentId?: string) => {
-    // Clear the pending flag since allocation is being confirmed
-    setIsNewPaymentPendingAllocation(false)
+    // Clear the pending flag SYNCHRONOUSLY since allocation is being confirmed
+    // This prevents handleAllocationDialogClose from rolling back the payment
+    isNewPaymentPendingRef.current = false
     
     // Create allocation records
     allocations.forEach((allocation) => {

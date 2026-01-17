@@ -1,6 +1,6 @@
 import type { Cost } from '@/types'
 import { Badge } from '@/components/ui'
-import { MoreVertical, Edit, X, Repeat } from 'lucide-react'
+import { MoreVertical, Edit, Trash2, Repeat } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,7 +13,7 @@ interface CostRowProps {
   memberName?: string | null
   groupName?: string | null
   onEdit?: (id: string) => void
-  onCancel?: (id: string) => void
+  onDelete?: (id: string) => void
   showMemberColumn?: boolean
   showGroupColumn?: boolean
 }
@@ -23,10 +23,15 @@ export function CostRow({
   memberName,
   groupName,
   onEdit,
-  onCancel,
+  onDelete,
   showMemberColumn = true,
   showGroupColumn = true,
 }: CostRowProps) {
+  const handleDelete = () => {
+    if (confirm(`Ali res želite izbrisati strošek "${cost.title}" (${cost.amount.toFixed(2)} €)?`)) {
+      onDelete?.(cost.id)
+    }
+  }
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'pending':
@@ -135,19 +140,19 @@ export function CostRow({
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            {onEdit && cost.status !== 'cancelled' && (
+            {onEdit && (
               <DropdownMenuItem onClick={() => onEdit(cost.id)}>
                 <Edit className="w-4 h-4 mr-2" />
                 Uredi
               </DropdownMenuItem>
             )}
-            {onCancel && cost.status !== 'cancelled' && (
+            {onDelete && (
               <DropdownMenuItem
-                onClick={() => onCancel(cost.id)}
+                onClick={handleDelete}
                 className="text-red-600 dark:text-red-400"
               >
-                <X className="w-4 h-4 mr-2" />
-                Razveljavi
+                <Trash2 className="w-4 h-4 mr-2" />
+                Izbriši
               </DropdownMenuItem>
             )}
           </DropdownMenuContent>

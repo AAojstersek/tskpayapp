@@ -255,6 +255,14 @@ export const appStore = {
           console.log(`[appStore.create] Creating cost:`, newItem)
           dbData = await typeCostToDb(newItem as unknown as Record<string, unknown>, db)
           console.log(`[appStore.create] Converted to DB format:`, dbData)
+        } else if (entity === 'members') {
+          console.log(`[appStore.create] Creating member:`, newItem)
+          dbData = typeToDb(newItem as unknown as Record<string, unknown>)
+          console.log(`[appStore.create] Converted to DB format:`, dbData)
+        } else if (entity === 'paymentAllocations') {
+          console.log(`[appStore.create] Creating paymentAllocation:`, newItem)
+          dbData = typeToDb(newItem as unknown as Record<string, unknown>)
+          console.log(`[appStore.create] Converted to DB format:`, dbData)
         } else {
           dbData = typeToDb(newItem as unknown as Record<string, unknown>)
         }

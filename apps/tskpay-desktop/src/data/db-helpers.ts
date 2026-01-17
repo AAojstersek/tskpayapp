@@ -33,6 +33,11 @@ export function typeToDb(
   const converted: Record<string, unknown> = {}
   
   for (const [key, value] of Object.entries(typeData)) {
+    // Skip arrays - they are handled separately (e.g., parentIds -> member_parents table)
+    if (Array.isArray(value)) {
+      continue
+    }
+    
     // Convert camelCase to snake_case
     const snakeKey = key.replace(/[A-Z]/g, (letter: string) => `_${letter.toLowerCase()}`)
     

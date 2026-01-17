@@ -7,7 +7,7 @@ import { useMembers, useGroups, useCosts, useCostTypes } from '@/data/useAppStor
 export function StroskiInObračunavanjePage() {
   const { members } = useMembers()
   const { groups } = useGroups()
-  const { costs, create: createCost, update: updateCost } = useCosts()
+  const { costs, create: createCost, update: updateCost, remove: removeCost } = useCosts()
   const { costTypes } = useCostTypes()
   const [viewMode, setViewMode] = useState<'by-cost' | 'by-member'>('by-cost')
   const [groupFilter, setGroupFilter] = useState<string | undefined>(undefined)
@@ -30,10 +30,8 @@ export function StroskiInObračunavanjePage() {
     setFormOpen(true)
   }
 
-  const handleCancelCost = (id: string) => {
-    if (confirm('Ali ste prepričani, da želite razveljaviti ta strošek?')) {
-      updateCost(id, { status: 'cancelled' })
-    }
+  const handleDeleteCost = (id: string) => {
+    removeCost(id)
   }
 
   const handleSaveCost = (costData: Omit<Cost, 'id' | 'createdAt'>) => {
@@ -110,7 +108,7 @@ export function StroskiInObračunavanjePage() {
         onViewModeChange={setViewMode}
         onCreateCost={handleCreateCost}
         onEditCost={handleEditCost}
-        onCancelCost={handleCancelCost}
+        onDeleteCost={handleDeleteCost}
         onBulkBilling={handleBulkBilling}
         onGroupFilterChange={setGroupFilter}
         onStatusFilterChange={setStatusFilter}
