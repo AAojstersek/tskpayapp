@@ -98,11 +98,18 @@ const entityToTable: Record<EntityType, string> = {
 
 // Initialize store by loading from database
 async function initializeStore(): Promise<void> {
-  if (isInitialized) return
+  if (isInitialized) {
+    console.log('[appStore] Already initialized, skipping...')
+    return
+  }
+  
+  console.log('[appStore] Starting initialization...')
   
   try {
     // Run migration if needed
     await migrateFromLocalStorage()
+    
+    console.log('[appStore] Loading data from database...')
     
     // Load all data from database
     const [members, parents, coaches, groups, costs, payments, paymentAllocations, bankStatements, bankTransactions, auditLog, costTypes] = await Promise.all([
@@ -173,9 +180,20 @@ async function initializeStore(): Promise<void> {
     }
     
     isInitialized = true
+    
+    console.log('[appStore] Data loaded successfully:', {
+      members: appState.members.length,
+      parents: appState.parents.length,
+      coaches: appState.coaches.length,
+      groups: appState.groups.length,
+      costs: appState.costs.length,
+      payments: appState.payments.length,
+    })
+    
     notify()
+    console.log('[appStore] Subscribers notified')
   } catch (error) {
-    console.error('Failed to initialize store:', error)
+    console.error('[appStore] Failed to initialize store:', error)
     throw error
   }
 }
