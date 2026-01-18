@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { MainNav } from './MainNav'
-import { UserMenu } from './UserMenu'
 import clubLogoDark from '@/assets/club-logo-dark.png'
 
 export interface AppShellProps {
@@ -34,11 +33,11 @@ export function AppShell({
       >
         <div className="flex flex-col h-full">
           {/* Logo/Header */}
-          <div className="flex items-center justify-between h-16 px-6 border-b border-slate-200 dark:border-slate-700">
+          <div className="flex items-center justify-between h-20 px-3 py-3 border-b border-slate-200 dark:border-slate-700">
             <img
               src={clubLogoDark}
               alt="TSK JUB Dol"
-              className="h-[60px] w-auto max-w-[280px] object-contain"
+              className="h-14 w-auto object-contain"
             />
             <button
               onClick={() => setSidebarOpen(false)}
@@ -65,14 +64,6 @@ export function AppShell({
             <MainNav
               items={navigationItems}
               onNavigate={onNavigate}
-            />
-          </div>
-
-          {/* User Menu */}
-          <div className="border-t border-slate-200 dark:border-slate-700">
-            <UserMenu
-              user={user}
-              onLogout={onLogout}
             />
           </div>
         </div>

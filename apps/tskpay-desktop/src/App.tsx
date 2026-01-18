@@ -17,12 +17,6 @@ const navigationItems = [
   { label: 'Nastavitve', href: '/nastavitve' },
 ]
 
-// Mock user data - replace with real auth later
-const mockUser = {
-  name: 'Bančnik',
-  avatarUrl: undefined,
-}
-
 function App() {
   const location = useLocation()
   const navigate = useNavigate()
@@ -56,17 +50,10 @@ function App() {
     navigate(href)
   }
 
-  const handleLogout = () => {
-    // TODO: Implement logout logic
-    console.log('Logout clicked')
-  }
-
   return (
     <AppShell
       navigationItems={navigationItemsWithActive}
-      user={mockUser}
       onNavigate={handleNavigate}
-      onLogout={handleLogout}
     >
       <Routes>
         <Route path="/" element={<PregledInPorocilaPage />} />

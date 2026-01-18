@@ -26,7 +26,7 @@ export function CostForm({
   const [costType, setCostType] = useState('')
   const [dueDate, setDueDate] = useState('')
   const [memberId, setMemberId] = useState('')
-  const [status, setStatus] = useState<'pending' | 'paid' | 'cancelled'>('pending')
+  const [status, setStatus] = useState<'pending' | 'paid'>('pending')
   // Ponavljajoči stroški
   const [isRecurring, setIsRecurring] = useState(false)
   const [recurringPeriod, setRecurringPeriod] = useState<'monthly' | 'yearly' | 'weekly' | 'quarterly' | ''>('')
@@ -214,12 +214,11 @@ export function CostForm({
                 id="status"
                 value={status}
                 onValueChange={(value) =>
-                  setStatus(value as 'pending' | 'paid' | 'cancelled')
+                  setStatus(value as 'pending' | 'paid')
                 }
               >
                 <option value="pending">Odprto</option>
                 <option value="paid">Poravnano</option>
-                <option value="cancelled">Razveljavljeno</option>
               </Select>
             </div>
           </div>

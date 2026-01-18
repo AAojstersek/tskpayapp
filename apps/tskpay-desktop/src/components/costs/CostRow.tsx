@@ -42,14 +42,8 @@ export function CostRow({
         )
       case 'paid':
         return (
-          <Badge className="bg-emerald-500 hover:bg-emerald-600 text-white">
+          <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 dark:bg-green-950 dark:text-green-300 dark:border-green-800">
             Poravnano
-          </Badge>
-        )
-      case 'cancelled':
-        return (
-          <Badge variant="outline" className="border-slate-500 text-slate-500">
-            Razveljavljeno
           </Badge>
         )
       default:

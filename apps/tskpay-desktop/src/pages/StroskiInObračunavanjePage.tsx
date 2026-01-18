@@ -14,7 +14,7 @@ export function StroskiInObračunavanjePage() {
   const { parents } = useParents()
   const [viewMode, setViewMode] = useState<'by-cost' | 'by-member'>('by-cost')
   const [groupFilter, setGroupFilter] = useState<string | undefined>(undefined)
-  const [statusFilter, setStatusFilter] = useState<'pending' | 'paid' | 'cancelled' | 'all'>('all')
+  const [statusFilter, setStatusFilter] = useState<'pending' | 'paid' | 'all'>('all')
   const [costTypeFilter, setCostTypeFilter] = useState<string | undefined>(undefined)
   const [formOpen, setFormOpen] = useState(false)
   const [bulkFormOpen, setBulkFormOpen] = useState(false)

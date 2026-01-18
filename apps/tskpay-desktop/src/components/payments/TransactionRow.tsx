@@ -36,7 +36,7 @@ export function TransactionRow({
         )
       case 'confirmed':
         return (
-          <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950 dark:text-blue-300 dark:border-blue-800">
+          <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 dark:bg-green-950 dark:text-green-300 dark:border-green-800">
             <CheckCircle2 className="w-3 h-3 mr-1" />
             Potrjena
           </Badge>
@@ -53,7 +53,7 @@ export function TransactionRow({
       case 'unmatched':
         return 'bg-red-50/50 dark:bg-red-950/20'
       case 'confirmed':
-        return 'bg-blue-50/50 dark:bg-blue-950/20'
+        return 'bg-green-50/50 dark:bg-green-950/20'
       default:
         return ''
     }

@@ -12,7 +12,7 @@ import type {
   Cost,
   Payment,
 } from '@/types'
-import { useMembers, useParents, useGroups, useCosts, usePayments, useBankTransactions, useAuditLog } from '@/data/useAppStore'
+import { useMembers, useParents, useGroups, useCosts, usePayments, useBankTransactions } from '@/data/useAppStore'
 
 // Aggregation functions
 function calculateKPIs(
@@ -297,7 +297,6 @@ export function PregledInPorocilaPage() {
   const { costs } = useCosts()
   const { payments } = usePayments()
   const { bankTransactions } = useBankTransactions()
-  const { auditLog } = useAuditLog()
 
   const [periodFrom, setPeriodFrom] = useState<string | undefined>(
     new Date(new Date().getFullYear(), 0, 1).toISOString().split('T')[0]
@@ -362,7 +361,6 @@ export function PregledInPorocilaPage() {
         memberObligations={memberObligations}
         groupObligations={groupObligations}
         financialReports={financialReport}
-        auditLog={auditLog}
         periodFrom={periodFrom}
         periodTo={periodTo}
         groupFilter={groupFilter}

@@ -26,7 +26,7 @@ export interface CostListProps {
   }>
   viewMode?: 'by-cost' | 'by-member'
   groupFilter?: string
-  statusFilter?: 'pending' | 'paid' | 'cancelled' | 'all'
+  statusFilter?: 'pending' | 'paid' | 'all'
   costTypeFilter?: string
   onViewModeChange?: (mode: 'by-cost' | 'by-member') => void
   onCreateCost?: () => void
@@ -34,7 +34,7 @@ export interface CostListProps {
   onDeleteCost?: (id: string) => void
   onBulkBilling?: (memberIds: string[]) => void
   onGroupFilterChange?: (groupId: string | undefined) => void
-  onStatusFilterChange?: (status: 'pending' | 'paid' | 'cancelled' | 'all') => void
+  onStatusFilterChange?: (status: 'pending' | 'paid' | 'all') => void
   onCostTypeFilterChange?: (costType: string | undefined) => void
   onManageCostTypes?: () => void
   onExportEmails?: () => void
@@ -220,14 +220,13 @@ export function CostList({
           <Select
             value={statusFilter}
             onValueChange={(value) =>
-              onStatusFilterChange?.(value as 'pending' | 'paid' | 'cancelled' | 'all')
+              onStatusFilterChange?.(value as 'pending' | 'paid' | 'all')
             }
             className="w-full sm:w-[180px]"
           >
             <option value="all">Vsi statusi</option>
             <option value="pending">Odprto</option>
             <option value="paid">Poravnano</option>
-            <option value="cancelled">Razveljavljeno</option>
           </Select>
 
           <Select
@@ -487,17 +486,10 @@ export function CostList({
                                   Odprto
                                 </Badge>
                               ) : cost.status === 'paid' ? (
-                                <Badge className="bg-emerald-500 hover:bg-emerald-600 text-white text-xs">
+                                <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 dark:bg-green-950 dark:text-green-300 dark:border-green-800 text-xs">
                                   Poravnano
                                 </Badge>
-                              ) : (
-                                <Badge
-                                  variant="outline"
-                                  className="border-slate-500 text-slate-500 text-xs"
-                                >
-                                  Razveljavljeno
-                                </Badge>
-                              )}
+                              ) : null}
                             </td>
                             <td className="px-4 py-2 text-right">
                               <DropdownMenu>

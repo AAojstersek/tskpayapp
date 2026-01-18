@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import type { DashboardKPIs, MemberObligation, GroupObligation, FinancialReport, AuditLogEntry } from '@/types'
+import type { DashboardKPIs, MemberObligation, GroupObligation, FinancialReport } from '@/types'
 import { MemberObligationRow } from './MemberObligationRow'
 import { GroupObligationRow } from './GroupObligationRow'
 import { Button, Card, CardContent, CardHeader, CardTitle, Select, Input, Tabs, TabsList, TabsTrigger } from '@/components/ui'
@@ -9,14 +9,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/DropdownMenu'
-import { Download, Filter, Users, FileText, Clock, AlertCircle } from 'lucide-react'
+import { Download, Filter } from 'lucide-react'
 
 export interface DashboardViewProps {
   dashboardKPIs: DashboardKPIs
   memberObligations: MemberObligation[]
   groupObligations: GroupObligation[]
   financialReports: FinancialReport
-  auditLog: AuditLogEntry[]
   periodFrom?: string
   periodTo?: string
   groupFilter?: string
@@ -39,7 +38,6 @@ export function DashboardView({
   memberObligations,
   groupObligations,
   financialReports,
-  auditLog,
   periodFrom,
   periodTo,
   groupFilter,
@@ -104,30 +102,6 @@ export function DashboardView({
       month: '2-digit',
       year: 'numeric',
     })
-  }
-
-  const formatDateTime = (dateString: string) => {
-    const date = new Date(dateString)
-    return date.toLocaleString('sl-SI', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    })
-  }
-
-  const getActionIcon = (action: string) => {
-    switch (action) {
-      case 'bulk_billing':
-        return <Users className="w-4 h-4" />
-      case 'import_confirmed':
-        return <FileText className="w-4 h-4" />
-      case 'cost_cancelled':
-        return <AlertCircle className="w-4 h-4" />
-      default:
-        return <Clock className="w-4 h-4" />
-    }
   }
 
   return (
@@ -446,74 +420,38 @@ export function DashboardView({
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg font-semibold">Finančni pregled</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <div className="text-sm text-slate-600 dark:text-slate-400 mb-2">
-                Obdobje: {formatDate(financialReports.period.from)} - {formatDate(financialReports.period.to)}
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <div className="text-xs text-slate-500 dark:text-slate-400">Ustvarjeno</div>
-                  <div className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-                    {formatAmount(financialReports.comparison.created)}
-                  </div>
-                </div>
-                <div>
-                  <div className="text-xs text-slate-500 dark:text-slate-400">Plačano</div>
-                  <div className="text-lg font-semibold text-green-600 dark:text-green-400">
-                    {formatAmount(financialReports.comparison.paid)}
-                  </div>
-                </div>
-              </div>
-              <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-800">
-                <div className="text-xs text-slate-500 dark:text-slate-400">Stopnja plačil</div>
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg font-semibold">Finančni pregled</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <div className="text-sm text-slate-600 dark:text-slate-400 mb-2">
+              Obdobje: {formatDate(financialReports.period.from)} - {formatDate(financialReports.period.to)}
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <div className="text-xs text-slate-500 dark:text-slate-400">Ustvarjeno</div>
                 <div className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-                  {financialReports.comparison.paymentRate.toFixed(1)}%
+                  {formatAmount(financialReports.comparison.created)}
+                </div>
+              </div>
+              <div>
+                <div className="text-xs text-slate-500 dark:text-slate-400">Plačano</div>
+                <div className="text-lg font-semibold text-green-600 dark:text-green-400">
+                  {formatAmount(financialReports.comparison.paid)}
                 </div>
               </div>
             </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg font-semibold">Revizijska sled</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3 max-h-96 overflow-y-auto">
-              {auditLog.length === 0 ? (
-                <p className="text-sm text-slate-500 dark:text-slate-400 text-center py-4">
-                  Ni zapisov v revizijski sledi
-                </p>
-              ) : (
-                auditLog.slice(0, 10).map((entry) => (
-                  <div
-                    key={entry.id}
-                    className="flex items-start gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800"
-                  >
-                    <div className="mt-0.5 text-slate-400 dark:text-slate-500">
-                      {getActionIcon(entry.action)}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="text-sm font-medium text-slate-900 dark:text-slate-100">
-                        {entry.description}
-                      </div>
-                      <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                        {entry.userName} • {formatDateTime(entry.timestamp)}
-                      </div>
-                    </div>
-                  </div>
-                ))
-              )}
+            <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-800">
+              <div className="text-xs text-slate-500 dark:text-slate-400">Stopnja plačil</div>
+              <div className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+                {financialReports.comparison.paymentRate.toFixed(1)}%
+              </div>
             </div>
-          </CardContent>
-        </Card>
-      </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }
