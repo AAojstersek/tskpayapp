@@ -2,13 +2,16 @@ import { useState } from 'react'
 import { CostList, CostForm, BulkBillingForm } from '@/components/costs'
 import { CostTypeManager } from '@/components/costs/CostTypeManager'
 import type { Cost } from '@/types'
-import { useMembers, useGroups, useCosts, useCostTypes } from '@/data/useAppStore'
+import { useMembers, useGroups, useCosts, useCostTypes, useParents } from '@/data/useAppStore'
+import { generateEmailExportFile } from '@/data/emailExport'
+import { db } from '@/data/database'
 
 export function StroskiInObračunavanjePage() {
   const { members } = useMembers()
   const { groups } = useGroups()
   const { costs, create: createCost, update: updateCost, remove: removeCost } = useCosts()
   const { costTypes } = useCostTypes()
+  const { parents } = useParents()
   const [viewMode, setViewMode] = useState<'by-cost' | 'by-member'>('by-cost')
   const [groupFilter, setGroupFilter] = useState<string | undefined>(undefined)
   const [statusFilter, setStatusFilter] = useState<'pending' | 'paid' | 'cancelled' | 'all'>('all')
@@ -94,6 +97,42 @@ export function StroskiInObračunavanjePage() {
     setSelectedMemberIds([])
   }
 
+  const handleExportEmails = async () => {
+    console.log('[handleExportEmails] Handler called!', { 
+      parentsCount: parents.length, 
+      membersCount: members.length, 
+      costsCount: costs.length,
+      hasParents: !!parents,
+      hasMembers: !!members,
+      hasCosts: !!costs
+    })
+    
+    try {
+      // Generate email export file content
+      const fileContent = generateEmailExportFile(parents, members, costs)
+      console.log('[handleExportEmails] Generated file content length:', fileContent.length)
+
+      if (fileContent.trim() === '' || fileContent.includes('Ni staršev')) {
+        console.warn('[handleExportEmails] No parents with overdue costs and email addresses')
+        // Don't show alert in Tauri - it requires special permissions
+        return
+      }
+
+      // Generate filename with timestamp
+      const timestamp = new Date().toISOString().split('T')[0]
+      const defaultFilename = `dolzniki-${timestamp}.txt`
+      console.log('[handleExportEmails] Saving file:', defaultFilename)
+
+      // Save file using Tauri dialog
+      const filePath = await db.saveTextFile(fileContent, defaultFilename)
+      console.log('[handleExportEmails] File saved successfully:', filePath)
+    } catch (err) {
+      console.error('[handleExportEmails] Error exporting emails:', err)
+      // Don't use alert() in Tauri - it requires dialog.message permissions
+      // Error is already logged to console
+    }
+  }
+
   return (
     <>
       <CostList
@@ -114,6 +153,7 @@ export function StroskiInObračunavanjePage() {
         onStatusFilterChange={setStatusFilter}
         onCostTypeFilterChange={setCostTypeFilter}
         onManageCostTypes={() => setCostTypeManagerOpen(true)}
+        onExportEmails={handleExportEmails}
       />
       <CostForm
         cost={editingCost}

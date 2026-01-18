@@ -260,4 +260,8 @@ export const db = {
   importDatabase: async (): Promise<string> => {
     return await invoke<string>('import_database')
   },
+  // Save text file
+  saveTextFile: async (content: string, defaultFilename: string): Promise<string> => {
+    return await invoke<string>('save_text_file', { content, defaultFilename })
+  },
 }

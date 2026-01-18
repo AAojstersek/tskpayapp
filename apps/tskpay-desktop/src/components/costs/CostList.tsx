@@ -8,7 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/DropdownMenu'
-import { Plus, Users, MoreVertical, Edit, Trash2, Settings } from 'lucide-react'
+import { Plus, Users, MoreVertical, Edit, Trash2, Settings, Mail } from 'lucide-react'
 
 export interface CostListProps {
   costs: Cost[]
@@ -37,6 +37,7 @@ export interface CostListProps {
   onStatusFilterChange?: (status: 'pending' | 'paid' | 'cancelled' | 'all') => void
   onCostTypeFilterChange?: (costType: string | undefined) => void
   onManageCostTypes?: () => void
+  onExportEmails?: () => void
 }
 
 export function CostList({
@@ -57,6 +58,7 @@ export function CostList({
   onStatusFilterChange,
   onCostTypeFilterChange,
   onManageCostTypes,
+  onExportEmails,
 }: CostListProps) {
   const [selectedMemberIds, setSelectedMemberIds] = useState<Set<string>>(new Set())
 
@@ -171,6 +173,19 @@ export function CostList({
             >
               <Settings className="w-4 h-4 mr-2" />
               Vrste stroškov
+            </Button>
+          )}
+          {onExportEmails && (
+            <Button
+              onClick={() => {
+                console.log('[CostList] onExportEmails button clicked')
+                onExportEmails()
+              }}
+              variant="outline"
+              className="border-slate-300 dark:border-slate-600"
+            >
+              <Mail className="w-4 h-4 mr-2" />
+              Pripravi mail za dolžnike
             </Button>
           )}
           <Button onClick={onCreateCost} className="bg-blue-600 hover:bg-blue-700">

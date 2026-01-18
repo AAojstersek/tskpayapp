@@ -144,3 +144,42 @@ pub async fn import_database(app: AppHandle) -> Result<String, String> {
     // Return backup path if created
     Ok(backup_path.unwrap_or_else(|| "Nobena obstoječa baza ni bila zamenjana.".to_string()))
 }
+
+/// Save text file to a user-selected location
+#[tauri::command]
+pub async fn save_text_file(app: AppHandle, content: String, default_filename: String) -> Result<String, String> {
+    // Use mpsc channel for async communication
+    let (tx, mut rx) = mpsc::unbounded_channel();
+
+    // Open file save dialog
+    app.dialog()
+        .file()
+        .set_title("Shrani datoteko")
+        .set_file_name(&default_filename)
+        .add_filter("Text Files", &["txt"])
+        .add_filter("All Files", &["*"])
+        .save_file(move |dialog_result| {
+            let _ = tx.send(dialog_result);
+        });
+
+    // Wait for dialog result asynchronously (non-blocking)
+    let file_path = rx.recv().await.ok_or_else(|| "Napaka pri komunikaciji z dialogom.".to_string())?;
+
+    let file_path = match file_path {
+        Some(path) => match path {
+            FilePath::Path(p) => p,
+            FilePath::Url(_) => return Err("Podpora za URL poti ni na voljo.".to_string()),
+        },
+        None => return Err("Shranjevanje je bilo preklicano.".to_string()),
+    };
+
+    // Write content to file
+    fs::write(&file_path, content)
+        .map_err(|e| format!("Napaka pri shranjevanju datoteke: {}", e))?;
+
+    // Return the path as string
+    file_path
+        .to_str()
+        .ok_or_else(|| "Napaka pri pretvorbi poti datoteke.".to_string())
+        .map(|s| s.to_string())
+}
