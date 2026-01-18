@@ -5,8 +5,10 @@ use tauri::Manager;
 
 pub mod queries;
 mod commands;
+mod backup;
 pub use queries::*;
 pub use commands::*;
+pub use backup::*;
 
 const DB_FILENAME: &str = "tskpay.db";
 const SCHEMA_VERSION: i32 = 5;

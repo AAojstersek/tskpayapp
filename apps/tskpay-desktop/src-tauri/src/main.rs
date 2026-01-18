@@ -3,7 +3,7 @@
 
 mod database;
 
-use database::{db_init, db_get_all, db_get_by_id, db_create, db_update, db_delete, db_get_member_parents, db_set_member_parents, db_get_parent_members};
+use database::{db_init, db_get_all, db_get_by_id, db_create, db_update, db_delete, db_get_member_parents, db_set_member_parents, db_get_parent_members, export_database, import_database};
 
 fn main() {
     tauri::Builder::default()
@@ -20,6 +20,8 @@ fn main() {
             db_get_member_parents,
             db_set_member_parents,
             db_get_parent_members,
+            export_database,
+            import_database,
         ])
         .setup(|app| {
             // Initialize database on app startup

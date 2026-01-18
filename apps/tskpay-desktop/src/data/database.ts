@@ -252,4 +252,12 @@ export const db = {
       return await invoke<string[]>('db_get_parent_members', { parentId })
     },
   },
+
+  // Database backup and restore
+  exportDatabase: async (): Promise<string> => {
+    return await invoke<string>('export_database')
+  },
+  importDatabase: async (): Promise<string> => {
+    return await invoke<string>('import_database')
+  },
 }
