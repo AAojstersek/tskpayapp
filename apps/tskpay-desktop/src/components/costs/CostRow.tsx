@@ -18,6 +18,24 @@ interface CostRowProps {
   showGroupColumn?: boolean
 }
 
+/**
+ * Check if a cost is overdue (pending status with dueDate before today)
+ */
+function isOverdue(cost: Cost): boolean {
+  if (cost.status !== 'pending' || !cost.dueDate) {
+    return false
+  }
+  
+  // Calculate today's date at midnight for proper comparison
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const todayStr = today.toISOString().split('T')[0] // Format: YYYY-MM-DD
+  
+  // Extract date part if it includes time
+  const dueDateStr = cost.dueDate.split('T')[0]
+  return dueDateStr < todayStr
+}
+
 export function CostRow({
   cost,
   memberName,
@@ -32,7 +50,18 @@ export function CostRow({
       onDelete?.(cost.id)
     }
   }
+  
+  const overdue = isOverdue(cost)
+  
   const getStatusBadge = (status: string) => {
+    if (overdue) {
+      return (
+        <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200 dark:bg-red-950 dark:text-red-300 dark:border-red-800">
+          Zapadlo
+        </Badge>
+      )
+    }
+    
     switch (status) {
       case 'pending':
         return (

@@ -10,6 +10,24 @@ import {
 } from '@/components/ui/DropdownMenu'
 import { Plus, Users, MoreVertical, Edit, Trash2, Settings, Mail } from 'lucide-react'
 
+/**
+ * Check if a cost is overdue (pending status with dueDate before today)
+ */
+function isOverdue(cost: Cost): boolean {
+  if (cost.status !== 'pending' || !cost.dueDate) {
+    return false
+  }
+  
+  // Calculate today's date at midnight for proper comparison
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const todayStr = today.toISOString().split('T')[0] // Format: YYYY-MM-DD
+  
+  // Extract date part if it includes time
+  const dueDateStr = cost.dueDate.split('T')[0]
+  return dueDateStr < todayStr
+}
+
 export interface CostListProps {
   costs: Cost[]
   costTypes: string[]
@@ -26,7 +44,7 @@ export interface CostListProps {
   }>
   viewMode?: 'by-cost' | 'by-member'
   groupFilter?: string
-  statusFilter?: 'pending' | 'paid' | 'all'
+  statusFilter?: 'pending' | 'paid' | 'overdue' | 'all'
   costTypeFilter?: string
   onViewModeChange?: (mode: 'by-cost' | 'by-member') => void
   onCreateCost?: () => void
@@ -34,7 +52,7 @@ export interface CostListProps {
   onDeleteCost?: (id: string) => void
   onBulkBilling?: (memberIds: string[]) => void
   onGroupFilterChange?: (groupId: string | undefined) => void
-  onStatusFilterChange?: (status: 'pending' | 'paid' | 'all') => void
+  onStatusFilterChange?: (status: 'pending' | 'paid' | 'overdue' | 'all') => void
   onCostTypeFilterChange?: (costType: string | undefined) => void
   onManageCostTypes?: () => void
   onExportEmails?: () => void
@@ -75,7 +93,23 @@ export function CostList({
     let filtered = costs
 
     if (statusFilter !== 'all') {
-      filtered = filtered.filter((c) => c.status === statusFilter)
+      if (statusFilter === 'overdue') {
+        // Calculate today's date at midnight for proper comparison
+        const today = new Date()
+        today.setHours(0, 0, 0, 0)
+        const todayStr = today.toISOString().split('T')[0] // Format: YYYY-MM-DD
+        
+        filtered = filtered.filter((c) => {
+          const isPending = c.status === 'pending'
+          if (!isPending || !c.dueDate) return false
+          
+          // Extract date part if it includes time
+          const dueDateStr = c.dueDate.split('T')[0]
+          return dueDateStr < todayStr
+        })
+      } else {
+        filtered = filtered.filter((c) => c.status === statusFilter)
+      }
     }
 
     if (costTypeFilter) {
@@ -220,13 +254,14 @@ export function CostList({
           <Select
             value={statusFilter}
             onValueChange={(value) =>
-              onStatusFilterChange?.(value as 'pending' | 'paid' | 'all')
+              onStatusFilterChange?.(value as 'pending' | 'paid' | 'overdue' | 'all')
             }
             className="w-full sm:w-[180px]"
           >
             <option value="all">Vsi statusi</option>
             <option value="pending">Odprto</option>
             <option value="paid">Poravnano</option>
+            <option value="overdue">Zapadlo</option>
           </Select>
 
           <Select
@@ -481,7 +516,11 @@ export function CostList({
                               </div>
                             </td>
                             <td className="px-4 py-2">
-                              {cost.status === 'pending' ? (
+                              {isOverdue(cost) ? (
+                                <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200 dark:bg-red-950 dark:text-red-300 dark:border-red-800 text-xs">
+                                  Zapadlo
+                                </Badge>
+                              ) : cost.status === 'pending' ? (
                                 <Badge className="bg-amber-500 hover:bg-amber-600 text-white text-xs">
                                   Odprto
                                 </Badge>
