@@ -2,9 +2,11 @@ import { useState } from 'react'
 import { Button, Card, CardHeader, CardTitle, CardContent } from '@/components/ui'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/Dialog'
 import { db } from '@/data/database'
-import { Download, Upload, AlertTriangle, CheckCircle2, Loader2 } from 'lucide-react'
+import { useTheme } from '@/contexts/ThemeContext'
+import { Download, Upload, AlertTriangle, CheckCircle2, Loader2, Sun, Moon } from 'lucide-react'
 
 export function NastavitvePage() {
+  const { theme, toggleTheme } = useTheme()
   const [isExporting, setIsExporting] = useState(false)
   const [isImporting, setIsImporting] = useState(false)
   const [showImportConfirm, setShowImportConfirm] = useState(false)
@@ -82,6 +84,56 @@ export function NastavitvePage() {
           Upravljanje nastavitev aplikacije in baze podatkov.
         </p>
       </div>
+
+      {/* Theme Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Zaslon</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
+                Temna tema
+              </p>
+              <p className="text-xs text-slate-600 dark:text-slate-400">
+                Preklopi med svetlo in temno temo aplikacije
+              </p>
+            </div>
+            <button
+              onClick={toggleTheme}
+              className={`
+                relative inline-flex h-6 w-11 items-center rounded-full transition-colors
+                focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
+                ${theme === 'dark' ? 'bg-blue-600' : 'bg-slate-300 dark:bg-slate-600'}
+              `}
+              role="switch"
+              aria-checked={theme === 'dark'}
+              aria-label="Preklopi temno temo"
+            >
+              <span
+                className={`
+                  inline-block h-4 w-4 transform rounded-full bg-white transition-transform
+                  ${theme === 'dark' ? 'translate-x-6' : 'translate-x-1'}
+                `}
+              />
+            </button>
+          </div>
+          <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+            {theme === 'dark' ? (
+              <>
+                <Moon className="w-4 h-4" />
+                <span>Temna tema je aktivna</span>
+              </>
+            ) : (
+              <>
+                <Sun className="w-4 h-4" />
+                <span>Svetla tema je aktivna</span>
+              </>
+            )}
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Database Backup Section */}
       <Card>

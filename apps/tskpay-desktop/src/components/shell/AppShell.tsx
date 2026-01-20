@@ -33,7 +33,7 @@ export function AppShell({
       >
         <div className="flex flex-col h-full">
           {/* Logo/Header */}
-          <div className="flex items-center justify-between h-20 px-3 py-3 border-b border-slate-200 dark:border-slate-700">
+          <div className="flex items-center justify-between h-20 px-3 py-3 bg-slate-800 border-b border-slate-700">
             <img
               src={clubLogoDark}
               alt="TSK JUB Dol"
@@ -41,7 +41,7 @@ export function AppShell({
             />
             <button
               onClick={() => setSidebarOpen(false)}
-              className="lg:hidden p-2 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+              className="lg:hidden p-2 text-slate-300 hover:text-slate-100"
             >
               <svg
                 className="w-5 h-5"
@@ -80,10 +80,10 @@ export function AppShell({
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Mobile Header */}
-        <header className="lg:hidden h-16 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 flex items-center px-4">
+        <header className="lg:hidden h-16 bg-slate-800 border-b border-slate-700 flex items-center px-4">
           <button
             onClick={() => setSidebarOpen(true)}
-            className="p-2 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+            className="p-2 text-slate-300 hover:text-slate-100"
           >
             <svg
               className="w-6 h-6"
