@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import type { DashboardKPIs, MemberObligation, GroupObligation, FinancialReport } from '@/types'
 import { MemberObligationRow } from './MemberObligationRow'
 import { GroupObligationRow } from './GroupObligationRow'
-import { Button, Card, CardContent, CardHeader, CardTitle, Select, Input, Tabs, TabsList, TabsTrigger } from '@/components/ui'
+import { Button, Card, CardContent, CardHeader, CardTitle, Select, Input, DateInput, Tabs, TabsList, TabsTrigger } from '@/components/ui'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -170,8 +170,7 @@ export function DashboardView({
               <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
                 Obdobje od
               </label>
-              <Input
-                type="date"
+              <DateInput
                 value={periodFrom || ''}
                 onChange={(e) => onPeriodFromChange?.(e.target.value || undefined)}
               />
@@ -180,8 +179,7 @@ export function DashboardView({
               <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
                 Obdobje do
               </label>
-              <Input
-                type="date"
+              <DateInput
                 value={periodTo || ''}
                 onChange={(e) => onPeriodToChange?.(e.target.value || undefined)}
               />

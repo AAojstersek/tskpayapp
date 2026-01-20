@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import type { Member, Parent, Group } from '@/types'
-import { Button, Input, Label, Select, Checkbox, Textarea } from '@/components/ui'
+import { Button, Input, DateInput, Label, Select, Checkbox, Textarea } from '@/components/ui'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/Dialog'
 import { Plus, X, User } from 'lucide-react'
 
@@ -156,9 +156,8 @@ export function MemberForm({
 
           <div className="space-y-2">
             <Label htmlFor="dateOfBirth">Datum rojstva</Label>
-            <Input
+            <DateInput
               id="dateOfBirth"
-              type="date"
               value={dateOfBirth}
               onChange={(e) => setDateOfBirth(e.target.value)}
             />

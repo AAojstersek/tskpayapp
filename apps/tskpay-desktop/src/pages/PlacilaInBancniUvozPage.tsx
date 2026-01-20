@@ -1,6 +1,6 @@
 import { useState, useMemo, useRef } from 'react'
 import { TransactionList, BankStatementList, PaymentForm, PaymentAllocationDialog } from '@/components/payments'
-import { Button, Badge, Tabs, TabsList, TabsTrigger, Select, Input } from '@/components/ui'
+import { Button, Badge, Tabs, TabsList, TabsTrigger, Select, Input, DateInput } from '@/components/ui'
 import type { Payment } from '@/types'
 import { 
   useBankStatements, 
@@ -493,8 +493,7 @@ export function PlacilaInBancniUvozPage() {
                 <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
                   Datum od
                 </label>
-                <Input
-                  type="date"
+                <DateInput
                   value={paymentDateFrom || ''}
                   onChange={(e) => setPaymentDateFrom(e.target.value || undefined)}
                 />
@@ -503,8 +502,7 @@ export function PlacilaInBancniUvozPage() {
                 <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
                   Datum do
                 </label>
-                <Input
-                  type="date"
+                <DateInput
                   value={paymentDateTo || ''}
                   onChange={(e) => setPaymentDateTo(e.target.value || undefined)}
                 />

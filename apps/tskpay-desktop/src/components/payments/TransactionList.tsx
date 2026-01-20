@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import type { BankStatement, BankTransaction, Parent } from '@/types'
 import { TransactionRow } from './TransactionRow'
-import { Button, Select, Input } from '@/components/ui'
+import { Button, Select, Input, DateInput } from '@/components/ui'
 import { ArrowLeft, CheckCircle2, Filter } from 'lucide-react'
 
 export interface TransactionListProps {
@@ -221,8 +221,7 @@ export function TransactionList({
             <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
               Datum od
             </label>
-            <Input
-              type="date"
+            <DateInput
               value={dateFrom || ''}
               onChange={(e) => onDateFromChange?.(e.target.value || undefined)}
             />
@@ -231,8 +230,7 @@ export function TransactionList({
             <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
               Datum do
             </label>
-            <Input
-              type="date"
+            <DateInput
               value={dateTo || ''}
               onChange={(e) => onDateToChange?.(e.target.value || undefined)}
             />

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import type { Payment, Parent } from '@/types'
-import { Button, Input, Label, Select, Textarea } from '@/components/ui'
+import { Button, Input, DateInput, Label, Select, Textarea } from '@/components/ui'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/Dialog'
 
 export interface PaymentFormProps {
@@ -186,9 +186,8 @@ export function PaymentForm({
               <Label htmlFor="paymentDate">
                 Datum plačila <span className="text-red-500">*</span>
               </Label>
-              <Input
+              <DateInput
                 id="paymentDate"
-                type="date"
                 value={paymentDate}
                 onChange={(e) => setPaymentDate(e.target.value)}
                 required

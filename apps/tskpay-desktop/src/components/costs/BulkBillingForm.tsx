@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { Member } from '@/types'
-import { Button, Input, Label, Select, Checkbox, Textarea } from '@/components/ui'
+import { Button, Input, DateInput, Label, Select, Checkbox, Textarea } from '@/components/ui'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/Dialog'
 
 export interface BulkBillingFormProps {
@@ -178,9 +178,8 @@ export function BulkBillingForm({
 
           <div className="space-y-2">
             <Label htmlFor="dueDate">Rok plačila</Label>
-            <Input
+            <DateInput
               id="dueDate"
-              type="date"
               value={dueDate}
               onChange={(e) => setDueDate(e.target.value)}
             />
@@ -240,9 +239,8 @@ export function BulkBillingForm({
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="recurringStartDate">Datum začetka</Label>
-                    <Input
+                    <DateInput
                       id="recurringStartDate"
-                      type="date"
                       value={recurringStartDate}
                       onChange={(e) => setRecurringStartDate(e.target.value)}
                     />
@@ -250,9 +248,8 @@ export function BulkBillingForm({
 
                   <div className="space-y-2">
                     <Label htmlFor="recurringEndDate">Datum konca (opcijsko)</Label>
-                    <Input
+                    <DateInput
                       id="recurringEndDate"
-                      type="date"
                       value={recurringEndDate}
                       onChange={(e) => setRecurringEndDate(e.target.value)}
                     />

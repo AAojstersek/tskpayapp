@@ -1,5 +1,6 @@
 export { Button } from './Button'
 export { Input } from './Input'
+export { DateInput } from './DateInput'
 export { Textarea } from './Textarea'
 export { Label } from './Label'
 export { Badge } from './Badge'
