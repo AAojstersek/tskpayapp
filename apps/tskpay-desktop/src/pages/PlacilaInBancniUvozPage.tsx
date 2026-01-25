@@ -1,6 +1,6 @@
 import { useState, useMemo, useRef } from 'react'
 import { TransactionList, BankStatementList, PaymentForm, PaymentAllocationDialog } from '@/components/payments'
-import { Button, Badge, Tabs, TabsList, TabsTrigger, Select, Input, DateInput } from '@/components/ui'
+import { Button, Badge, Tabs, TabsList, TabsTrigger, Select, DateInput, ConfirmDialog } from '@/components/ui'
 import type { Payment } from '@/types'
 import { 
   useBankStatements, 
@@ -17,8 +17,8 @@ import { parseXmlFile, matchTransactionToParent } from '@/lib/xmlParser'
 type ViewMode = 'statements' | 'payments'
 
 export function PlacilaInBancniUvozPage() {
-  const { bankStatements: statements, create: createStatement, update: updateStatement } = useBankStatements()
-  const { bankTransactions: transactions, create: createTransaction, update: updateTransaction } = useBankTransactions()
+  const { bankStatements: statements, create: createStatement, update: updateStatement, remove: removeStatement } = useBankStatements()
+  const { bankTransactions: transactions, create: createTransaction, update: updateTransaction, remove: removeTransaction } = useBankTransactions()
   const { parents } = useParents()
   const { members } = useMembers()
   const { payments, create: createPayment, update: updatePayment, deleteWithCascade: deletePaymentWithCascade } = usePayments()
@@ -32,6 +32,7 @@ export function PlacilaInBancniUvozPage() {
   const [parentFilter, setParentFilter] = useState<string | undefined>(undefined)
   const [dateFrom, setDateFrom] = useState<string | undefined>(undefined)
   const [dateTo, setDateTo] = useState<string | undefined>(undefined)
+  const [hideConfirmed, setHideConfirmed] = useState(false)
 
   // Manual payment dialog state
   const [isPaymentFormOpen, setIsPaymentFormOpen] = useState(false)
@@ -49,6 +50,9 @@ export function PlacilaInBancniUvozPage() {
   const [paymentParentFilter, setPaymentParentFilter] = useState<string | undefined>(undefined)
   const [paymentDateFrom, setPaymentDateFrom] = useState<string | undefined>(undefined)
   const [paymentDateTo, setPaymentDateTo] = useState<string | undefined>(undefined)
+  
+  // Delete confirmation dialog state
+  const [deleteConfirmStatementId, setDeleteConfirmStatementId] = useState<string | null>(null)
 
   const handleUploadStatement = async (file: File) => {
     // Create statement record
@@ -76,8 +80,20 @@ export function PlacilaInBancniUvozPage() {
       // Create transactions from parsed data
       let matchedCount = 0
       let unmatchedCount = 0
+      let skippedCount = 0
       
       for (const tx of parsedStatement.transactions) {
+        // Check if transaction already exists by bankReference
+        const existingTransaction = tx.id 
+          ? transactions.find((t) => t.bankReference === tx.id)
+          : null
+        
+        // Skip if transaction already exists (confirmed or not)
+        if (existingTransaction) {
+          skippedCount++
+          continue
+        }
+        
         // Match transaction to parent
         const matchResult = matchTransactionToParent(tx, parents, members)
         
@@ -104,13 +120,18 @@ export function PlacilaInBancniUvozPage() {
         }
       }
       
-      // Update statement with final counts
+      // Update statement with final counts (only newly imported transactions)
       updateStatement(newStatement.id, {
         status: 'completed',
-        totalTransactions: parsedStatement.transactions.length,
+        totalTransactions: matchedCount + unmatchedCount,
         matchedTransactions: matchedCount,
         unmatchedTransactions: unmatchedCount,
       })
+      
+      // Log skipped transactions if any
+      if (skippedCount > 0) {
+        console.log(`Preskočeno ${skippedCount} transakcij, ki so bile že uvožene`)
+      }
       
       // Automatically view the imported statement
       setSelectedStatementId(newStatement.id)
@@ -179,21 +200,65 @@ export function PlacilaInBancniUvozPage() {
     setIsAllocationDialogOpen(true)
   }
 
-  const handleConfirmAllTransactions = (statementId: string) => {
+  // Open delete confirmation dialog
+  const handleDeleteStatementClick = (statementId: string) => {
+    setDeleteConfirmStatementId(statementId)
+  }
+
+  // Actual delete logic (called when user confirms)
+  const handleDeleteStatementConfirm = () => {
+    if (!deleteConfirmStatementId) return
+    
+    const statementId = deleteConfirmStatementId
+    
+    // Find all transactions for this statement
     const statementTransactions = transactions.filter(
-      (t) => t.bankStatementId === statementId && t.status !== 'confirmed' && t.matchedParentId
+      (t) => t.bankStatementId === statementId
     )
-
-    if (statementTransactions.length === 0) {
-      alert('Ni transakcij za potrditev')
-      return
+    
+    // Delete all associated transactions
+    statementTransactions.forEach((transaction) => {
+      removeTransaction(transaction.id)
+    })
+    
+    // Delete the statement
+    removeStatement(statementId)
+    
+    // Clear selection if this statement was selected
+    if (selectedStatementId === statementId) {
+      setSelectedStatementId(undefined)
     }
+    
+    // Close the dialog
+    setDeleteConfirmStatementId(null)
+  }
 
-    if (confirm(`Ali ste prepričani, da želite potrditi vseh ${statementTransactions.length} transakcij?`)) {
-      statementTransactions.forEach((transaction) => {
-        handleConfirmTransaction(transaction.id)
-      })
+  // Build delete confirmation message
+  const getDeleteConfirmMessage = () => {
+    if (!deleteConfirmStatementId) return ''
+    
+    const statement = statements.find((s) => s.id === deleteConfirmStatementId)
+    if (!statement) return ''
+    
+    const statementTransactions = transactions.filter(
+      (t) => t.bankStatementId === deleteConfirmStatementId
+    )
+    
+    const confirmedTransactions = statementTransactions.filter(
+      (t) => t.status === 'confirmed' && t.paymentId
+    )
+    
+    let message = `Ali ste prepričani, da želite izbrisati bančni izpisek "${statement.fileName}"?`
+    
+    if (confirmedTransactions.length > 0) {
+      message += `\n\nOPOZORILO: ${confirmedTransactions.length} transakcij je bilo že potrjenih in pretvorjenih v plačila. Plačila bodo ostala, vendar bo povezava z bančno transakcijo izgubljena.`
     }
+    
+    if (statementTransactions.length > 0) {
+      message += `\n\nTo bo izbrisalo ${statementTransactions.length} transakcij.`
+    }
+    
+    return message
   }
 
   // Manual payment handlers
@@ -652,21 +717,23 @@ export function PlacilaInBancniUvozPage() {
           parentFilter={parentFilter}
           dateFrom={dateFrom}
           dateTo={dateTo}
+          hideConfirmed={hideConfirmed}
           onCloseStatement={() => setSelectedStatementId(undefined)}
           onUpdateTransactionMatch={handleUpdateTransactionMatch}
           onConfirmTransaction={handleConfirmTransaction}
-          onConfirmAllTransactions={handleConfirmAllTransactions}
           onTransactionStatusFilterChange={setTransactionStatusFilter}
           onStatementFilterChange={setStatementFilter}
           onParentFilterChange={setParentFilter}
           onDateFromChange={setDateFrom}
           onDateToChange={setDateTo}
+          onHideConfirmedChange={setHideConfirmed}
         />
       ) : (
         <BankStatementList
           statements={statements}
           onViewStatement={setSelectedStatementId}
           onUploadStatement={handleUploadStatement}
+          onDeleteStatement={handleDeleteStatementClick}
         />
       )}
 
@@ -689,6 +756,20 @@ export function PlacilaInBancniUvozPage() {
         open={isAllocationDialogOpen}
         onOpenChange={handleAllocationDialogClose}
         onAllocate={handleAllocatePayment}
+      />
+
+      {/* Delete Bank Statement Confirmation Dialog */}
+      <ConfirmDialog
+        open={deleteConfirmStatementId !== null}
+        onOpenChange={(open) => {
+          if (!open) setDeleteConfirmStatementId(null)
+        }}
+        title="Izbriši bančni izpisek"
+        message={getDeleteConfirmMessage()}
+        confirmLabel="Izbriši"
+        cancelLabel="Prekliči"
+        variant="destructive"
+        onConfirm={handleDeleteStatementConfirm}
       />
     </div>
   )

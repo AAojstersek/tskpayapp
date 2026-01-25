@@ -145,9 +145,10 @@ export const DateInput = ({ value = '', onChange, className = '', ...props }: Da
         hiddenDateInputRef.current.value = value
       }
       // Try to use showPicker() if available (modern browsers)
-      if ('showPicker' in hiddenDateInputRef.current && typeof (hiddenDateInputRef.current as any).showPicker === 'function') {
+      const el = hiddenDateInputRef.current as HTMLInputElement & { showPicker?: () => void }
+      if ('showPicker' in el && typeof el.showPicker === 'function') {
         try {
-          ;(hiddenDateInputRef.current as any).showPicker()
+          el.showPicker()
         } catch (err) {
           // Fallback to focus/click
           hiddenDateInputRef.current.focus()
@@ -171,6 +172,12 @@ export const DateInput = ({ value = '', onChange, className = '', ...props }: Da
       setDisplayValue('')
       onChange?.({ target: { value: '' } })
     }
+    
+    // Close the calendar picker by blurring the hidden input
+    // Use requestAnimationFrame to ensure the change event completes first
+    requestAnimationFrame(() => {
+      hiddenDateInputRef.current?.blur()
+    })
   }
 
   return (

@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import type { Cost } from '@/types'
 import { CostRow } from './CostRow'
 import { Button, Badge, Select, Tabs, TabsList, TabsTrigger, Label } from '@/components/ui'
@@ -8,7 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/DropdownMenu'
-import { Plus, Users, MoreVertical, Edit, Trash2, Settings, Mail } from 'lucide-react'
+import { Plus, Users, MoreVertical, Edit, Trash2, Settings, Mail, Pencil } from 'lucide-react'
 
 /**
  * Check if a cost is overdue (pending status with dueDate before today)
@@ -56,6 +56,8 @@ export interface CostListProps {
   onCostTypeFilterChange?: (costType: string | undefined) => void
   onManageCostTypes?: () => void
   onExportEmails?: () => void
+  onBulkEditCosts?: (costIds: string[]) => void
+  selectionClearTrigger?: number
 }
 
 export function CostList({
@@ -77,8 +79,11 @@ export function CostList({
   onCostTypeFilterChange,
   onManageCostTypes,
   onExportEmails,
+  onBulkEditCosts,
+  selectionClearTrigger,
 }: CostListProps) {
   const [selectedMemberIds, setSelectedMemberIds] = useState<Set<string>>(new Set())
+  const [selectedCostIds, setSelectedCostIds] = useState<Set<string>>(new Set())
 
   const membersMap = useMemo(
     () => new Map(members.map((m) => [m.id, m])),
@@ -178,6 +183,44 @@ export function CostList({
     setSelectedMemberIds(newSelected)
   }
 
+  // Cost selection handlers for by-cost view
+  const handleSelectCost = (costId: string, selected: boolean) => {
+    const newSelected = new Set(selectedCostIds)
+    if (selected) {
+      newSelected.add(costId)
+    } else {
+      newSelected.delete(costId)
+    }
+    setSelectedCostIds(newSelected)
+  }
+
+  // "Select All" functionality for costs
+  const allCostsSelected = filteredCosts.length > 0 && 
+    filteredCosts.every((c) => selectedCostIds.has(c.id))
+  const someCostsSelected = filteredCosts.some((c) => selectedCostIds.has(c.id)) && !allCostsSelected
+
+  const handleSelectAllCosts = (checked: boolean) => {
+    const newSelected = new Set(selectedCostIds)
+    if (checked) {
+      filteredCosts.forEach((c) => newSelected.add(c.id))
+    } else {
+      filteredCosts.forEach((c) => newSelected.delete(c.id))
+    }
+    setSelectedCostIds(newSelected)
+  }
+
+  // Clear cost selection when filters or viewMode change
+  useEffect(() => {
+    setSelectedCostIds(new Set())
+  }, [viewMode, groupFilter, statusFilter, costTypeFilter])
+
+  // Clear cost selection when selectionClearTrigger changes (after bulk operations)
+  useEffect(() => {
+    if (selectionClearTrigger !== undefined && selectionClearTrigger > 0) {
+      setSelectedCostIds(new Set())
+    }
+  }, [selectionClearTrigger])
+
   return (
     <div className="max-w-7xl mx-auto p-6 space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -189,7 +232,16 @@ export function CostList({
             Upravljanje stroškov in obračunavanje obveznosti
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
+          {selectedCostIds.size > 0 && viewMode === 'by-cost' && (
+            <Button
+              onClick={() => onBulkEditCosts?.(Array.from(selectedCostIds))}
+              className="bg-amber-600 hover:bg-amber-700"
+            >
+              <Pencil className="w-4 h-4 mr-2" />
+              Uredi izbrane ({selectedCostIds.size})
+            </Button>
+          )}
           {selectedMemberIds.size > 0 && (
             <Button
               onClick={() => onBulkBilling?.(Array.from(selectedMemberIds))}
@@ -285,6 +337,18 @@ export function CostList({
             <table className="w-full">
               <thead className="bg-slate-50 dark:bg-slate-900/50">
                 <tr>
+                  <th className="px-4 py-3 w-10">
+                    <input
+                      type="checkbox"
+                      checked={allCostsSelected}
+                      ref={(input) => {
+                        if (input) input.indeterminate = someCostsSelected
+                      }}
+                      onChange={(e) => handleSelectAllCosts(e.target.checked)}
+                      className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-2 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-800"
+                      title="Označi vse"
+                    />
+                  </th>
                   <th className="px-4 py-3 text-left text-sm font-medium text-slate-700 dark:text-slate-300">
                     Strošek
                   </th>
@@ -314,7 +378,7 @@ export function CostList({
               <tbody>
                 {filteredCosts.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="px-4 py-12 text-center">
+                    <td colSpan={9} className="px-4 py-12 text-center">
                       {costs.length === 0 ? (
                         <div className="space-y-2">
                           <p className="text-slate-500 dark:text-slate-400">Ni stroškov</p>
@@ -354,6 +418,9 @@ export function CostList({
                         groupName={group?.name}
                         onEdit={onEditCost}
                         onDelete={onDeleteCost}
+                        showCheckbox={true}
+                        selected={selectedCostIds.has(cost.id)}
+                        onSelectChange={handleSelectCost}
                       />
                     )
                   })

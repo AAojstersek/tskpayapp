@@ -174,9 +174,24 @@ async function initializeStore(): Promise<void> {
       }),
       paymentAllocations: paymentAllocations.map((pa) => dbToType<PaymentAllocation>(pa)),
       bankStatements: bankStatements.map((bs) => dbToType<BankStatement>(bs)),
-      bankTransactions: bankTransactions.map((bt) => dbToType<BankTransaction>(bt)),
+      bankTransactions: bankTransactions.map((bt) => {
+        const tx = dbToType<BankTransaction>(bt)
+        const payment = payments.find((p: Record<string, unknown>) => p.bank_transaction_id === tx.id)
+        tx.paymentId = payment ? (payment.id as string) : null
+        return tx
+      }),
       auditLog: auditLog.map((al) => dbToType<AuditLogEntry>(al)),
       costTypes: costTypes.map((ct) => ct.name as string),
+    }
+    
+    // Log bank statements and transactions for debugging
+    console.log('[appStore] Loaded bank statements:', appState.bankStatements.length)
+    if (appState.bankStatements.length > 0) {
+      console.log('[appStore] Bank statements:', appState.bankStatements.map((bs) => ({ id: bs.id, fileName: bs.fileName, status: bs.status })))
+    }
+    console.log('[appStore] Loaded bank transactions:', appState.bankTransactions.length)
+    if (appState.bankTransactions.length > 0) {
+      console.log('[appStore] Bank transactions sample:', appState.bankTransactions.slice(0, 3).map((bt) => ({ id: bt.id, bankStatementId: bt.bankStatementId, status: bt.status })))
     }
     
     isInitialized = true
@@ -188,6 +203,8 @@ async function initializeStore(): Promise<void> {
       groups: appState.groups.length,
       costs: appState.costs.length,
       payments: appState.payments.length,
+      bankStatements: appState.bankStatements.length,
+      bankTransactions: appState.bankTransactions.length,
     })
     
     notify()
@@ -267,8 +284,21 @@ export const appStore = {
           dbData = typeToDb(newItem as unknown as Record<string, unknown>)
         }
         
+        // bank_transactions has no payment_id column; omit to avoid INSERT failure
+        if (entity === 'bankTransactions') {
+          delete dbData.payment_id
+        }
+        
         await dbCreate(table, dbData)
         console.log(`[appStore.create] Successfully saved ${entity} to database`)
+        
+        // Log bank statements and transactions specifically for debugging
+        if (entity === 'bankStatements') {
+          console.log(`[appStore.create] Bank statement saved:`, { id: newItem.id, fileName: (newItem as unknown as BankStatement).fileName })
+        }
+        if (entity === 'bankTransactions') {
+          console.log(`[appStore.create] Bank transaction saved:`, { id: newItem.id, bankStatementId: (newItem as unknown as BankTransaction).bankStatementId })
+        }
         
         // Handle member_parents relationships for members
         if (entity === 'members') {
@@ -320,6 +350,11 @@ export const appStore = {
           dbData = await typeCostToDb(updatedItem, db)
         } else {
           dbData = typeToDb(patch as Record<string, unknown>)
+        }
+        
+        // bank_transactions has no payment_id column; omit to avoid UPDATE failure
+        if (entity === 'bankTransactions') {
+          delete dbData.payment_id
         }
         
         await dbUpdate(table, id, dbData)

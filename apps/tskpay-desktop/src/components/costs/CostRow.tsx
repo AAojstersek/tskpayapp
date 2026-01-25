@@ -16,6 +16,9 @@ interface CostRowProps {
   onDelete?: (id: string) => void
   showMemberColumn?: boolean
   showGroupColumn?: boolean
+  showCheckbox?: boolean
+  selected?: boolean
+  onSelectChange?: (costId: string, selected: boolean) => void
 }
 
 /**
@@ -44,6 +47,9 @@ export function CostRow({
   onDelete,
   showMemberColumn = true,
   showGroupColumn = true,
+  showCheckbox = false,
+  selected = false,
+  onSelectChange,
 }: CostRowProps) {
   const handleDelete = () => {
     if (confirm(`Ali res želite izbrisati strošek "${cost.title}" (${cost.amount.toFixed(2)} €)?`)) {
@@ -92,6 +98,16 @@ export function CostRow({
 
   return (
     <tr className="border-b border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+      {showCheckbox && (
+        <td className="px-4 py-3 w-10">
+          <input
+            type="checkbox"
+            checked={selected}
+            onChange={(e) => onSelectChange?.(cost.id, e.target.checked)}
+            className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-2 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-800"
+          />
+        </td>
+      )}
       <td className="px-4 py-3">
         <div className="flex items-center gap-2">
           <div className="font-medium text-slate-900 dark:text-slate-100">

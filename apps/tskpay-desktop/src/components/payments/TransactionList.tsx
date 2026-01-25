@@ -1,8 +1,8 @@
 import { useMemo } from 'react'
 import type { BankStatement, BankTransaction, Parent } from '@/types'
 import { TransactionRow } from './TransactionRow'
-import { Button, Select, Input, DateInput } from '@/components/ui'
-import { ArrowLeft, CheckCircle2, Filter } from 'lucide-react'
+import { Button, Select, DateInput, Checkbox } from '@/components/ui'
+import { ArrowLeft, Filter } from 'lucide-react'
 
 export interface TransactionListProps {
   bankStatements: BankStatement[]
@@ -14,15 +14,16 @@ export interface TransactionListProps {
   parentFilter?: string
   dateFrom?: string
   dateTo?: string
+  hideConfirmed?: boolean
   onCloseStatement?: () => void
   onUpdateTransactionMatch?: (transactionId: string, parentId: string | null) => void
   onConfirmTransaction?: (transactionId: string) => void
-  onConfirmAllTransactions?: (statementId: string) => void
   onTransactionStatusFilterChange?: (status: 'matched' | 'unmatched' | 'confirmed' | 'all') => void
   onStatementFilterChange?: (statementId: string | undefined) => void
   onParentFilterChange?: (parentId: string | undefined) => void
   onDateFromChange?: (date: string | undefined) => void
   onDateToChange?: (date: string | undefined) => void
+  onHideConfirmedChange?: (hide: boolean) => void
 }
 
 export function TransactionList({
@@ -35,15 +36,16 @@ export function TransactionList({
   parentFilter,
   dateFrom,
   dateTo,
+  hideConfirmed = false,
   onCloseStatement,
   onUpdateTransactionMatch,
   onConfirmTransaction,
-  onConfirmAllTransactions,
   onTransactionStatusFilterChange,
   onStatementFilterChange,
   onParentFilterChange,
   onDateFromChange,
   onDateToChange,
+  onHideConfirmedChange,
 }: TransactionListProps) {
   const selectedStatement = bankStatements.find((s) => s.id === selectedStatementId)
 
@@ -58,6 +60,10 @@ export function TransactionList({
 
     if (transactionStatusFilter !== 'all') {
       filtered = filtered.filter((t) => t.status === transactionStatusFilter)
+    }
+
+    if (hideConfirmed) {
+      filtered = filtered.filter((t) => t.status !== 'confirmed')
     }
 
     if (parentFilter) {
@@ -77,6 +83,7 @@ export function TransactionList({
     selectedStatementId,
     statementFilter,
     transactionStatusFilter,
+    hideConfirmed,
     parentFilter,
     dateFrom,
     dateTo,
@@ -89,14 +96,6 @@ export function TransactionList({
     const confirmed = filteredTransactions.filter((t) => t.status === 'confirmed').length
     return { total, matched, unmatched, confirmed }
   }, [filteredTransactions])
-
-  const canConfirmAll = useMemo(() => {
-    if (!selectedStatementId) return false
-    const unconfirmed = filteredTransactions.filter(
-      (t) => t.status !== 'confirmed' && t.matchedParentId
-    )
-    return unconfirmed.length > 0
-  }, [filteredTransactions, selectedStatementId])
 
   return (
     <div className="space-y-6">
@@ -123,15 +122,6 @@ export function TransactionList({
             )}
           </div>
         </div>
-        {selectedStatement && canConfirmAll && (
-          <Button
-            onClick={() => onConfirmAllTransactions?.(selectedStatement.id)}
-            className="bg-blue-600 hover:bg-blue-700"
-          >
-            <CheckCircle2 className="w-4 h-4 mr-2" />
-            Potrdi vse ujemajoče
-          </Button>
-        )}
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -236,6 +226,17 @@ export function TransactionList({
             />
           </div>
         </div>
+        <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
+          <label className="flex items-center gap-2 cursor-pointer">
+            <Checkbox
+              checked={hideConfirmed}
+              onCheckedChange={(checked) => onHideConfirmedChange?.(checked)}
+            />
+            <span className="text-sm text-slate-700 dark:text-slate-300">
+              Skrij potrjene transakcije
+            </span>
+          </label>
+        </div>
       </div>
 
       <div className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
@@ -287,6 +288,7 @@ export function TransactionList({
                             onParentFilterChange?.(undefined)
                             onDateFromChange?.(undefined)
                             onDateToChange?.(undefined)
+                            onHideConfirmedChange?.(false)
                           }}
                         >
                           Počisti filtre

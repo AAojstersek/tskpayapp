@@ -1,17 +1,19 @@
 import type { BankStatement } from '@/types'
 import { Badge, Button } from '@/components/ui'
-import { FileText, CheckCircle2, AlertCircle, Clock, Upload } from 'lucide-react'
+import { FileText, CheckCircle2, AlertCircle, Clock, Upload, Trash2 } from 'lucide-react'
 
 export interface BankStatementListProps {
   statements: BankStatement[]
   onViewStatement?: (statementId: string) => void
   onUploadStatement?: (file: File) => void
+  onDeleteStatement?: (statementId: string) => void
 }
 
 export function BankStatementList({
   statements,
   onViewStatement,
   onUploadStatement,
+  onDeleteStatement,
 }: BankStatementListProps) {
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
@@ -157,14 +159,28 @@ export function BankStatementList({
                       {statement.unmatchedTransactions}
                     </td>
                     <td className="px-4 py-3 text-right">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => onViewStatement?.(statement.id)}
-                        disabled={statement.status === 'processing' || statement.status === 'failed'}
-                      >
-                        Odpri
-                      </Button>
+                      <div className="flex items-center justify-end gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => onViewStatement?.(statement.id)}
+                          disabled={statement.status === 'processing' || statement.status === 'failed'}
+                        >
+                          Odpri
+                        </Button>
+                        {onDeleteStatement && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => onDeleteStatement(statement.id)}
+                            disabled={statement.status === 'processing'}
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-950/30"
+                            title="Izbriši bančni izpisek"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </Button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))

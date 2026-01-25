@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { CostList, CostForm, BulkBillingForm } from '@/components/costs'
+import { CostList, CostForm, BulkBillingForm, BulkEditCostsDialog } from '@/components/costs'
+import type { BulkEditPatch } from '@/components/costs'
 import { CostTypeManager } from '@/components/costs/CostTypeManager'
 import type { Cost } from '@/types'
 import { useMembers, useGroups, useCosts, useCostTypes, useParents } from '@/data/useAppStore'
@@ -18,9 +19,12 @@ export function StroskiInObračunavanjePage() {
   const [costTypeFilter, setCostTypeFilter] = useState<string | undefined>(undefined)
   const [formOpen, setFormOpen] = useState(false)
   const [bulkFormOpen, setBulkFormOpen] = useState(false)
+  const [bulkEditOpen, setBulkEditOpen] = useState(false)
+  const [bulkEditCostIds, setBulkEditCostIds] = useState<string[]>([])
   const [costTypeManagerOpen, setCostTypeManagerOpen] = useState(false)
   const [editingCost, setEditingCost] = useState<Cost | null>(null)
   const [selectedMemberIds, setSelectedMemberIds] = useState<string[]>([])
+  const [selectionClearTrigger, setSelectionClearTrigger] = useState(0)
 
   const handleCreateCost = () => {
     setEditingCost(null)
@@ -39,8 +43,8 @@ export function StroskiInObračunavanjePage() {
 
   const handleSaveCost = (costData: Omit<Cost, 'id' | 'createdAt'>) => {
     if (editingCost) {
-      // Update existing cost - amount cannot be changed
       updateCost(editingCost.id, {
+        amount: costData.amount,
         title: costData.title,
         description: costData.description,
         costType: costData.costType,
@@ -58,6 +62,52 @@ export function StroskiInObračunavanjePage() {
   const handleBulkBilling = (memberIds: string[]) => {
     setSelectedMemberIds(memberIds)
     setBulkFormOpen(true)
+  }
+
+  const handleBulkEditCosts = (costIds: string[]) => {
+    setBulkEditCostIds(costIds)
+    setBulkEditOpen(true)
+  }
+
+  const handleBulkEditCostsApply = (patch: BulkEditPatch) => {
+    // Handle delete operation
+    if (patch.delete) {
+      bulkEditCostIds.forEach((costId) => {
+        removeCost(costId)
+      })
+      setBulkEditOpen(false)
+      setBulkEditCostIds([])
+      setSelectionClearTrigger((t) => t + 1)
+      return
+    }
+
+    // Apply changes to all selected costs
+    bulkEditCostIds.forEach((costId) => {
+      const updateData: Partial<Cost> = {}
+      
+      if (patch.amount !== undefined) {
+        updateData.amount = patch.amount
+      }
+      
+      if (patch.status !== undefined) {
+        updateData.status = patch.status
+      }
+      
+      if (patch.clearDueDate) {
+        updateData.dueDate = null
+      } else if (patch.dueDate !== undefined) {
+        updateData.dueDate = patch.dueDate
+      }
+      
+      // Only update if there's something to change
+      if (Object.keys(updateData).length > 0) {
+        updateCost(costId, updateData)
+      }
+    })
+    
+    setBulkEditOpen(false)
+    setBulkEditCostIds([])
+    setSelectionClearTrigger((t) => t + 1)
   }
 
   const handleSaveBulkBilling = (bulkData: {
@@ -154,6 +204,8 @@ export function StroskiInObračunavanjePage() {
         onCostTypeFilterChange={setCostTypeFilter}
         onManageCostTypes={() => setCostTypeManagerOpen(true)}
         onExportEmails={handleExportEmails}
+        onBulkEditCosts={handleBulkEditCosts}
+        selectionClearTrigger={selectionClearTrigger}
       />
       <CostForm
         cost={editingCost}
@@ -174,6 +226,12 @@ export function StroskiInObračunavanjePage() {
       <CostTypeManager
         open={costTypeManagerOpen}
         onOpenChange={setCostTypeManagerOpen}
+      />
+      <BulkEditCostsDialog
+        selectedCosts={costs.filter((c) => bulkEditCostIds.includes(c.id))}
+        open={bulkEditOpen}
+        onOpenChange={setBulkEditOpen}
+        onApply={handleBulkEditCostsApply}
       />
     </>
   )
