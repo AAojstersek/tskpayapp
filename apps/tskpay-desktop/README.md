@@ -43,12 +43,65 @@ npm run tauri:build
 
 The built app will be in `src-tauri/target/release/bundle/`.
 
-**Note:** For production builds, you'll need to add app icons to `src-tauri/icons/`:
-- `32x32.png`
-- `128x128.png`
-- `128x128@2x.png`
-- `icon.icns` (macOS)
-- `icon.ico` (Windows - optional for macOS-only)
+#### Building DMG for macOS Distribution
+
+To build a DMG file for macOS distribution:
+
+**From the root directory:**
+```bash
+npm run desktop:build:dmg
+```
+
+**Or from the app directory:**
+```bash
+cd apps/tskpay-desktop
+npm run build:dmg
+```
+
+The DMG file will be generated in `apps/tskpay-desktop/src-tauri/target/release/bundle/dmg/` with the name `tskpay_0.1.0_x64.dmg` (or similar, depending on your architecture).
+
+#### Building Universal Binary (Intel + Apple Silicon)
+
+To build a universal binary that works on both Intel and Apple Silicon MacBooks:
+
+**From the root directory:**
+```bash
+npm run desktop:build:universal
+```
+
+**Or from the app directory:**
+```bash
+cd apps/tskpay-desktop
+npm run build:universal
+```
+
+This will:
+1. Build the frontend
+2. Build for Intel (x86_64-apple-darwin)
+3. Build for Apple Silicon (aarch64-apple-darwin)
+4. Merge both binaries using `lipo` into a universal binary
+5. Generate a DMG with the universal binary
+
+The universal DMG will be in `apps/tskpay-desktop/src-tauri/target/release/bundle/dmg/` and will work on both Intel and Apple Silicon MacBooks.
+
+**Prerequisites for universal build:**
+- Rust toolchain for both architectures:
+  ```bash
+  rustup target add x86_64-apple-darwin
+  rustup target add aarch64-apple-darwin
+  ```
+- macOS with Xcode Command Line Tools (for `lipo`)
+
+**Note:** 
+- DMG can only be built on macOS
+- Universal build takes longer as it compiles for both architectures
+- The first build may take several minutes as Rust dependencies are compiled
+- For production builds, you'll need to add app icons to `src-tauri/icons/`:
+  - `32x32.png`
+  - `128x128.png`
+  - `128x128@2x.png`
+  - `icon.icns` (macOS)
+  - `icon.ico` (Windows - optional for macOS-only)
 
 ## Project Structure
 

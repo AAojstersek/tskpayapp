@@ -99,17 +99,12 @@ const entityToTable: Record<EntityType, string> = {
 // Initialize store by loading from database
 async function initializeStore(): Promise<void> {
   if (isInitialized) {
-    console.log('[appStore] Already initialized, skipping...')
     return
   }
-  
-  console.log('[appStore] Starting initialization...')
   
   try {
     // Run migration if needed
     await migrateFromLocalStorage()
-    
-    console.log('[appStore] Loading data from database...')
     
     // Load all data from database
     const [members, parents, coaches, groups, costs, payments, paymentAllocations, bankStatements, bankTransactions, auditLog, costTypes] = await Promise.all([
@@ -131,18 +126,21 @@ async function initializeStore(): Promise<void> {
       members.map(async (m) => {
         const member = dbToType<Member>(m)
         const parentIds = await db.memberParents.getMemberParents(member.id)
+        const finalParentIds = parentIds.length > 0 ? parentIds : (member.parentId ? [member.parentId] : [])
         return {
           ...member,
-          parentIds: parentIds.length > 0 ? parentIds : (member.parentId ? [member.parentId] : []),
+          parentIds: finalParentIds,
           parentId: member.parentId || (parentIds.length > 0 ? parentIds[0] : undefined),
         }
       })
     )
 
     // Convert database format to TypeScript types
+    const loadedParents = parents.map((p) => dbToType<Parent>(p))
+    
     appState = {
       members: membersWithParents,
-      parents: parents.map((p) => dbToType<Parent>(p)),
+      parents: loadedParents,
       coaches: coaches.map((c) => dbToType<Coach>(c)),
       groups: groups.map((g) => dbToType<Group>(g)),
       costs: await Promise.all(
@@ -184,31 +182,9 @@ async function initializeStore(): Promise<void> {
       costTypes: costTypes.map((ct) => ct.name as string),
     }
     
-    // Log bank statements and transactions for debugging
-    console.log('[appStore] Loaded bank statements:', appState.bankStatements.length)
-    if (appState.bankStatements.length > 0) {
-      console.log('[appStore] Bank statements:', appState.bankStatements.map((bs) => ({ id: bs.id, fileName: bs.fileName, status: bs.status })))
-    }
-    console.log('[appStore] Loaded bank transactions:', appState.bankTransactions.length)
-    if (appState.bankTransactions.length > 0) {
-      console.log('[appStore] Bank transactions sample:', appState.bankTransactions.slice(0, 3).map((bt) => ({ id: bt.id, bankStatementId: bt.bankStatementId, status: bt.status })))
-    }
-    
     isInitialized = true
     
-    console.log('[appStore] Data loaded successfully:', {
-      members: appState.members.length,
-      parents: appState.parents.length,
-      coaches: appState.coaches.length,
-      groups: appState.groups.length,
-      costs: appState.costs.length,
-      payments: appState.payments.length,
-      bankStatements: appState.bankStatements.length,
-      bankTransactions: appState.bankTransactions.length,
-    })
-    
     notify()
-    console.log('[appStore] Subscribers notified')
   } catch (error) {
     console.error('[appStore] Failed to initialize store:', error)
     throw error
@@ -260,6 +236,7 @@ export const appStore = {
       ...appState,
       [entity]: [...appState[entity], newItem],
     }
+    
     notify()
     
     // Persist to database asynchronously (fire and forget)
@@ -269,17 +246,11 @@ export const appStore = {
         let dbData: Record<string, unknown>
         
         if (entity === 'costs') {
-          console.log(`[appStore.create] Creating cost:`, newItem)
           dbData = await typeCostToDb(newItem as unknown as Record<string, unknown>, db)
-          console.log(`[appStore.create] Converted to DB format:`, dbData)
         } else if (entity === 'members') {
-          console.log(`[appStore.create] Creating member:`, newItem)
           dbData = typeToDb(newItem as unknown as Record<string, unknown>)
-          console.log(`[appStore.create] Converted to DB format:`, dbData)
         } else if (entity === 'paymentAllocations') {
-          console.log(`[appStore.create] Creating paymentAllocation:`, newItem)
           dbData = typeToDb(newItem as unknown as Record<string, unknown>)
-          console.log(`[appStore.create] Converted to DB format:`, dbData)
         } else {
           dbData = typeToDb(newItem as unknown as Record<string, unknown>)
         }
@@ -289,16 +260,27 @@ export const appStore = {
           delete dbData.payment_id
         }
         
-        await dbCreate(table, dbData)
-        console.log(`[appStore.create] Successfully saved ${entity} to database`)
+        // For members, wait for parent to exist in DB first (handles race condition for self-paying members)
+        if (entity === 'members') {
+          const member = newItem as unknown as Member
+          if (member.parentId) {
+            let retries = 0
+            const maxRetries = 20
+            while (retries < maxRetries) {
+              const parent = await db.parents.getById(member.parentId)
+              if (parent) {
+                break
+              }
+              await new Promise(resolve => setTimeout(resolve, 50))
+              retries++
+            }
+            if (retries >= maxRetries) {
+              console.warn(`[appStore.create] Parent ${member.parentId} not found after ${maxRetries} retries, proceeding anyway`)
+            }
+          }
+        }
         
-        // Log bank statements and transactions specifically for debugging
-        if (entity === 'bankStatements') {
-          console.log(`[appStore.create] Bank statement saved:`, { id: newItem.id, fileName: (newItem as unknown as BankStatement).fileName })
-        }
-        if (entity === 'bankTransactions') {
-          console.log(`[appStore.create] Bank transaction saved:`, { id: newItem.id, bankStatementId: (newItem as unknown as BankTransaction).bankStatementId })
-        }
+        await dbCreate(table, dbData)
         
         // Handle member_parents relationships for members
         if (entity === 'members') {

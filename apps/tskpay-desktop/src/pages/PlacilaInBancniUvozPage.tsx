@@ -128,11 +128,6 @@ export function PlacilaInBancniUvozPage() {
         unmatchedTransactions: unmatchedCount,
       })
       
-      // Log skipped transactions if any
-      if (skippedCount > 0) {
-        console.log(`Preskočeno ${skippedCount} transakcij, ki so bile že uvožene`)
-      }
-      
       // Automatically view the imported statement
       setSelectedStatementId(newStatement.id)
       setViewMode('statements')

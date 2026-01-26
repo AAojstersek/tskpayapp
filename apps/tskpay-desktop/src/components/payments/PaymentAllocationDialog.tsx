@@ -36,10 +36,12 @@ export function PaymentAllocationDialog({
   const payer = useMemo(() => {
     if (!payment) return null
     if (payment.parentId) {
-      return parents.find((p) => p.id === payment.parentId)
+      const found = parents.find((p) => p.id === payment.parentId)
+      return found
     }
     if (selectedParentId) {
-      return parents.find((p) => p.id === selectedParentId)
+      const found = parents.find((p) => p.id === selectedParentId)
+      return found
     }
     return null
   }, [payment, parents, selectedParentId])
@@ -50,12 +52,27 @@ export function PaymentAllocationDialog({
   // Get members linked to this payer
   const payerMembers = useMemo(() => {
     if (!payer) return []
-    return members.filter((m) => {
+    const filtered = members.filter((m) => {
       const memberParentIds = m.parentIds && m.parentIds.length > 0
         ? m.parentIds
         : (m.parentId ? [m.parentId] : [])
-      return memberParentIds.includes(payer.id)
+      
+      // Check if member is linked to payer via parentIds
+      let matches = memberParentIds.includes(payer.id)
+      
+      // Special case: if member has same name as payer and is in "Samo člani" group,
+      // treat as self-paying member (even if parentIds is not set correctly)
+      if (!matches && m.firstName === payer.firstName && m.lastName === payer.lastName && m.groupId === 'grp-samo-clani') {
+        // Check if member's parentId matches payer.id (fallback for self-paying members)
+        if (m.parentId === payer.id) {
+          matches = true
+        }
+      }
+      
+      return matches
     })
+    
+    return filtered
   }, [payer, members])
 
   // Get open costs for the payer's members, sorted by due date
@@ -65,8 +82,12 @@ export function PaymentAllocationDialog({
     // If payment is linked to a parent, show costs for their members
     if (payer && payerMembers.length > 0) {
       const memberIds = new Set(payerMembers.map((m) => m.id))
-      return costs
-        .filter((c) => c.status === 'pending' && memberIds.has(c.memberId))
+      
+      const filteredCosts = costs
+        .filter((c) => {
+          const matches = c.status === 'pending' && memberIds.has(c.memberId)
+          return matches
+        })
         .map((c) => ({
           ...c,
           member: members.find((m) => m.id === c.memberId),
@@ -78,6 +99,8 @@ export function PaymentAllocationDialog({
           if (!b.dueDate) return -1
           return a.dueDate.localeCompare(b.dueDate)
         })
+      
+      return filteredCosts
     }
     
     // If payment is unmatched, show all open costs
@@ -123,6 +146,7 @@ export function PaymentAllocationDialog({
       setSelectedParentId(payment?.parentId || null)
     }
   }, [open, existingAllocations, payment])
+
 
   const handleCostToggle = (costId: string, costAmount: number, checked: boolean) => {
     const newSelected = new Map(selectedCosts)
