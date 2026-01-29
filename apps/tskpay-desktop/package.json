@@ -8,6 +8,7 @@
     "build": "vite build",
     "tauri": "npx tauri",
     "build:dmg": "npm run build && npx tauri build --bundles dmg",
+    "build:dmg:intel": "npm run build && npx tauri build --target x86_64-apple-darwin --bundles dmg",
     "build:intel": "npm run build && npx tauri build --target x86_64-apple-darwin --bundles app",
     "build:arm64": "npm run build && npx tauri build --target aarch64-apple-darwin --bundles app",
     "build:universal": "bash scripts/build-universal.sh"

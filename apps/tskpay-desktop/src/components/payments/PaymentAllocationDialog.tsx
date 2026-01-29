@@ -337,7 +337,7 @@ export function PaymentAllocationDialog({
           {openCosts.length === 0 ? (
             <div className="text-center py-8 text-slate-500 dark:text-slate-400">
               {payer 
-                ? 'Ta plačnik nima odprtih stroškov za svoje tekmovalce.'
+                ? 'Ta plačnik nima odprtih stroškov za svoje člane.'
                 : 'Ni odprtih stroškov za razporeditev.'}
             </div>
           ) : (

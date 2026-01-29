@@ -94,13 +94,13 @@ export function BulkBillingForm({
         <DialogClose onClose={() => onOpenChange(false)} />
         <DialogHeader>
           <DialogTitle>
-            Masovno obračunavanje ({selectedMemberIds.length} tekmovalcev)
+            Masovno obračunavanje ({selectedMemberIds.length} članov)
           </DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6 p-6">
           <div className="space-y-2">
-            <Label>Izbrani tekmovalci</Label>
+            <Label>Izbrani člani</Label>
             <div className="bg-slate-50 dark:bg-slate-900/50 rounded-md p-3 max-h-32 overflow-y-auto">
               <ul className="text-sm text-slate-700 dark:text-slate-300 space-y-1">
                 {selectedMembers.map((member) => (
@@ -152,7 +152,7 @@ export function BulkBillingForm({
                 required
               />
               <p className="text-xs text-slate-500">
-                Enak znesek za vse izbrane tekmovalce
+                Enak znesek za vse izbrane člane
               </p>
             </div>
 

@@ -2,11 +2,9 @@ import { useState, useEffect } from 'react'
 import type { Member, Parent, Group } from '@/types'
 import { Button, Input, DateInput, Label, Select, Checkbox, Textarea } from '@/components/ui'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/Dialog'
-import { Plus, X, User } from 'lucide-react'
+import { Plus, X } from 'lucide-react'
 
-export interface MemberFormSaveData extends Omit<Member, 'id'> {
-  createSelfAsParent?: boolean // If true, create a parent record for this member
-}
+export interface MemberFormSaveData extends Omit<Member, 'id'> {}
 
 export interface MemberFormProps {
   member?: Member | null
@@ -17,8 +15,6 @@ export interface MemberFormProps {
   onSave?: (memberData: MemberFormSaveData) => void
   onAddParent?: () => void
 }
-
-const SAMO_CLANI_GROUP_ID = 'grp-samo-clani'
 
 export function MemberForm({
   member,
@@ -36,10 +32,6 @@ export function MemberForm({
   const [notes, setNotes] = useState('')
   const [parentIds, setParentIds] = useState<string[]>([])
   const [groupId, setGroupId] = useState<string>('')
-  const [isSelfPaying, setIsSelfPaying] = useState(false)
-
-  // Check if "Samo člani" group exists
-  const samoClaniGroup = groups.find((g) => g.id === SAMO_CLANI_GROUP_ID)
 
   useEffect(() => {
     if (open) {
@@ -51,7 +43,6 @@ export function MemberForm({
         setNotes(member.notes)
         setParentIds(member.parentIds && member.parentIds.length > 0 ? member.parentIds : (member.parentId ? [member.parentId] : []))
         setGroupId(member.groupId)
-        setIsSelfPaying(member.groupId === SAMO_CLANI_GROUP_ID)
       } else {
         setFirstName('')
         setLastName('')
@@ -60,17 +51,9 @@ export function MemberForm({
         setNotes('')
         setParentIds([])
         setGroupId('')
-        setIsSelfPaying(false)
       }
     }
   }, [member, open])
-
-  // When "self-paying" is toggled, auto-set the group
-  useEffect(() => {
-    if (isSelfPaying && samoClaniGroup) {
-      setGroupId(SAMO_CLANI_GROUP_ID)
-    }
-  }, [isSelfPaying, samoClaniGroup])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -79,9 +62,7 @@ export function MemberForm({
       return
     }
 
-    // For self-paying members, no parents need to be selected
-    // For regular members, at least one parent must be selected
-    if (!isSelfPaying && parentIds.length === 0) {
+    if (parentIds.length === 0) {
       return
     }
 
@@ -91,10 +72,9 @@ export function MemberForm({
       dateOfBirth,
       status,
       notes: notes.trim(),
-      parentId: isSelfPaying ? undefined : parentIds[0], // Glavni starš za kompatibilnost
-      parentIds: isSelfPaying ? [] : parentIds, // Will be filled by parent component
+      parentId: parentIds[0],
+      parentIds,
       groupId,
-      createSelfAsParent: isSelfPaying, // Signal to create parent record
     })
 
     onOpenChange(false)
@@ -122,7 +102,7 @@ export function MemberForm({
         <DialogClose onClose={() => onOpenChange(false)} />
         <DialogHeader>
           <DialogTitle>
-            {isEditMode ? 'Uredi tekmovalca' : 'Dodaj novega tekmovalca'}
+            {isEditMode ? 'Uredi člana' : 'Dodaj novega člana'}
           </DialogTitle>
         </DialogHeader>
 
@@ -163,33 +143,6 @@ export function MemberForm({
             />
           </div>
 
-          {/* Self-paying member option */}
-          {samoClaniGroup && !isEditMode && (
-            <div className="bg-blue-50 dark:bg-blue-950/20 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
-              <label className="flex items-start gap-3 cursor-pointer">
-                <Checkbox
-                  checked={isSelfPaying}
-                  onCheckedChange={(checked) => setIsSelfPaying(checked as boolean)}
-                  className="mt-0.5"
-                />
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <User className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                    <span className="text-sm font-medium text-blue-800 dark:text-blue-200">
-                      Samo član (plačuje sam zase)
-                    </span>
-                  </div>
-                  <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
-                    Za člane kluba, ki niso tekmovalci in sami plačujejo svoje obveznosti.
-                    Član bo dodan v skupino "Samo člani".
-                  </p>
-                </div>
-              </label>
-            </div>
-          )}
-
-          {/* Parents selection - hidden for self-paying members */}
-          {!isSelfPaying && (
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <Label>
@@ -262,7 +215,6 @@ export function MemberForm({
               <p className="text-xs text-red-500">Izberite vsaj enega starša</p>
             )}
           </div>
-          )}
 
           <div className="space-y-2">
             <Label htmlFor="groupId">
@@ -304,7 +256,7 @@ export function MemberForm({
               id="notes"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="Dodatne opombe o tekmovalcu..."
+              placeholder="Dodatne opombe o članu..."
               rows={4}
             />
           </div>
@@ -318,7 +270,7 @@ export function MemberForm({
               Prekliči
             </Button>
             <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
-              {isEditMode ? 'Shrani spremembe' : 'Dodaj tekmovalca'}
+              {isEditMode ? 'Shrani spremembe' : 'Dodaj člana'}
             </Button>
           </div>
         </form>

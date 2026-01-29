@@ -118,7 +118,7 @@ export function CostForm({
         <form onSubmit={handleSubmit} className="space-y-6 p-6">
           <div className="space-y-2">
             <Label htmlFor="memberId">
-              Tekmovalec <span className="text-red-500">*</span>
+              Član <span className="text-red-500">*</span>
             </Label>
             <Select
               id="memberId"
@@ -127,7 +127,7 @@ export function CostForm({
               required
               disabled={isEditMode}
             >
-              <option value="">Izberite tekmovalca</option>
+              <option value="">Izberite člana</option>
               {availableMembers.map((member) => (
                 <option key={member.id} value={member.id}>
                   {member.firstName} {member.lastName}

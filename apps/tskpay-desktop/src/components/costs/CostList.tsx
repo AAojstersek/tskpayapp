@@ -131,7 +131,7 @@ export function CostList({
     return filtered
   }, [costs, statusFilter, costTypeFilter, groupFilter, members])
 
-  // Prikazati vse aktivne tekmovalce (ne samo tiste s stroški)
+  // Prikazati vse aktivne člane (ne samo tiste s stroški)
   const displayedMembers = useMemo(() => {
     let filtered = members.filter((m) => m.status === 'active')
     
@@ -143,7 +143,7 @@ export function CostList({
     return filtered
   }, [members, groupFilter])
 
-  // Za vsakega tekmovalca pridobiti stroške
+  // Za vsakega člana pridobiti stroške
   const membersWithCosts = useMemo(() => {
     return displayedMembers.map((member) => {
       const memberCosts = filteredCosts.filter((c) => c.memberId === member.id)
@@ -284,7 +284,7 @@ export function CostList({
       <Tabs value={viewMode} onValueChange={(v) => onViewModeChange?.(v as 'by-cost' | 'by-member')}>
         <TabsList>
           <TabsTrigger value="by-cost">Po stroških</TabsTrigger>
-          <TabsTrigger value="by-member">Po tekmovalcih</TabsTrigger>
+          <TabsTrigger value="by-member">Po članih</TabsTrigger>
         </TabsList>
       </Tabs>
 
@@ -353,7 +353,7 @@ export function CostList({
                     Strošek
                   </th>
                   <th className="px-4 py-3 text-left text-sm font-medium text-slate-700 dark:text-slate-300">
-                    Tekmovalec
+                    Član
                   </th>
                   <th className="px-4 py-3 text-left text-sm font-medium text-slate-700 dark:text-slate-300">
                     Skupina
@@ -436,7 +436,7 @@ export function CostList({
           {displayedMembers.length === 0 ? (
             <div className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-12 text-center">
               <div className="space-y-2">
-                <p className="text-slate-500 dark:text-slate-400">Ni aktivnih tekmovalcev, ki bi ustrezali filtrom.</p>
+                <p className="text-slate-500 dark:text-slate-400">Ni aktivnih članov, ki bi ustrezali filtrom.</p>
                 <Button
                   variant="outline"
                   size="sm"
@@ -463,7 +463,7 @@ export function CostList({
                     className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-2 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-800"
                   />
                   <Label className="font-medium text-slate-900 dark:text-slate-100 cursor-pointer">
-                    Označi vse ({displayedMembers.length} tekmovalcev)
+                    Označi vse ({displayedMembers.length} članov)
                   </Label>
                   {selectedMemberIds.size > 0 && (
                     <span className="text-sm text-slate-500 dark:text-slate-400 ml-auto">

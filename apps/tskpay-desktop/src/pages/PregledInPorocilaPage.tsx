@@ -372,7 +372,7 @@ export function PregledInPorocilaPage() {
         onMemberStatusFilterChange={setMemberStatusFilter}
         onViewModeChange={setViewMode}
         onViewMemberDetails={(memberId) => {
-          alert(`Pregled podrobnosti tekmovalca: ${memberId}`)
+          alert(`Pregled podrobnosti člana: ${memberId}`)
         }}
         onViewParentDetails={(parentId) => {
           const parent = parents.find((p) => p.id === parentId)

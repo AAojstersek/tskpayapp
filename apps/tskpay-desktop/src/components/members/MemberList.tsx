@@ -164,7 +164,7 @@ export function MemberList({
         <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div className="text-sm text-blue-900 dark:text-blue-100">
-              Izbrano: <strong>{selectedIds.size}</strong> tekmovalcev
+              Izbrano: <strong>{selectedIds.size}</strong> članov
             </div>
             <div className="flex flex-wrap gap-2">
               <DropdownMenu>
@@ -224,7 +224,7 @@ export function MemberList({
                   />
                 </th>
                 <th className="px-4 py-3 text-left text-sm font-medium text-slate-700 dark:text-slate-300">
-                  Tekmovalec
+                  Član
                 </th>
                 <th className="px-4 py-3 text-left text-sm font-medium text-slate-700 dark:text-slate-300">
                   Starš
@@ -250,11 +250,11 @@ export function MemberList({
                     {members.length === 0 ? (
                       <div className="space-y-2">
                         <p className="text-slate-500 dark:text-slate-400">Ni članov</p>
-                        <p className="text-sm text-slate-400">Dodajte prvega tekmovalca, da začnete</p>
+                        <p className="text-sm text-slate-400">Dodajte prvega člana, da začnete</p>
                       </div>
                     ) : (
                       <div className="space-y-2">
-                        <p className="text-slate-500 dark:text-slate-400">Ni tekmovalcev, ki bi ustrezali filtrom.</p>
+                        <p className="text-slate-500 dark:text-slate-400">Ni članov, ki bi ustrezali filtrom.</p>
                         <Button
                           variant="outline"
                           size="sm"
@@ -303,7 +303,7 @@ export function MemberList({
 
       <div className="text-sm text-slate-600 dark:text-slate-400">
         Prikazano: <strong>{filteredMembers.length}</strong> od <strong>{members.length}</strong>{' '}
-        tekmovalcev
+        članov
       </div>
     </div>
   )

@@ -48,7 +48,7 @@ CREATE TABLE IF NOT EXISTS groups (
 
 CREATE INDEX IF NOT EXISTS idx_groups_coach ON groups(coach_id);
 
--- Members (Tekmovalci)
+-- Members (Člani)
 CREATE TABLE IF NOT EXISTS members (
   id TEXT PRIMARY KEY,
   first_name TEXT NOT NULL,
@@ -309,6 +309,6 @@ INSERT OR IGNORE INTO cost_types (id, name) VALUES
 INSERT OR IGNORE INTO coaches (id, name, email, phone) VALUES
   ('coa-samo-clani', 'Članstvo', NULL, NULL);
 
--- Special group for club members who pay for themselves (not tekmovalci/children)
+-- Special group for club members who pay for themselves (Samo člani)
 INSERT OR IGNORE INTO groups (id, name, coach_id) VALUES
   ('grp-samo-clani', 'Samo člani', 'coa-samo-clani');

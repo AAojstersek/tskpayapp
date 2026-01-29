@@ -8,6 +8,7 @@
     "desktop:dev": "npm --prefix apps/tskpay-desktop run tauri -- dev",
     "desktop:build": "npm --prefix apps/tskpay-desktop run tauri -- build",
     "desktop:build:dmg": "npm --prefix apps/tskpay-desktop run build:dmg",
+    "desktop:build:dmg:intel": "npm --prefix apps/tskpay-desktop run build:dmg:intel",
     "desktop:build:universal": "npm --prefix apps/tskpay-desktop run build:universal"
   }
 }

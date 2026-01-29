@@ -228,7 +228,7 @@ export function DashboardView({
               <CardTitle className="text-lg font-semibold">Obveznosti</CardTitle>
               <Tabs value={viewMode} onValueChange={(v) => onViewModeChange?.(v as 'by-member' | 'by-group')}>
                 <TabsList>
-                  <TabsTrigger value="by-member">Po tekmovalcih</TabsTrigger>
+                  <TabsTrigger value="by-member">Po članih</TabsTrigger>
                   <TabsTrigger value="by-group">Po skupinah</TabsTrigger>
                 </TabsList>
               </Tabs>
@@ -288,7 +288,7 @@ export function DashboardView({
                 <thead className="bg-slate-50 dark:bg-slate-900/50">
                   <tr>
                     <th className="px-4 py-3 text-left text-sm font-medium text-slate-700 dark:text-slate-300">
-                      Tekmovalec
+                      Član
                     </th>
                     <th className="px-4 py-3 text-left text-sm font-medium text-slate-700 dark:text-slate-300">
                       Starš

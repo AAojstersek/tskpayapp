@@ -262,7 +262,7 @@ export function matchTransactionToParent(
         parentId,
         memberId: member.id,
         confidence: 'medium',
-        matchReason: `Ime tekmovalca v opisu: ${member.firstName} ${member.lastName}`,
+        matchReason: `Ime člana v opisu: ${member.firstName} ${member.lastName}`,
       }
     }
   }

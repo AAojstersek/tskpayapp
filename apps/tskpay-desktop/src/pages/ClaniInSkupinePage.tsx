@@ -36,39 +36,18 @@ export function ClaniInSkupinePage() {
   }
 
   const handleDeleteMember = (id: string) => {
-    if (confirm('Ali ste prepričani, da želite izbrisati tega tekmovalca?')) {
+    if (confirm('Ali ste prepričani, da želite izbrisati tega člana?')) {
       deleteMember(id)
     }
   }
 
   const handleSaveMember = (memberData: MemberFormSaveData) => {
     if (editingMember) {
-      // Update existing member
       const { createSelfAsParent, ...updateData } = memberData
       updateMember(editingMember.id, updateData)
     } else {
-      // Create new member
       const { createSelfAsParent, ...memberCreateData } = memberData
-      
-      if (createSelfAsParent) {
-        // Create a parent record for this self-paying member
-        const newParent = createParent({
-          firstName: memberCreateData.firstName,
-          lastName: memberCreateData.lastName,
-          email: '',
-          phone: '',
-        })
-        
-        // Create member linked to the new parent
-        createMember({
-          ...memberCreateData,
-          parentId: newParent.id,
-          parentIds: [newParent.id],
-        })
-      } else {
-        // Regular member creation
-        createMember(memberCreateData)
-      }
+      createMember(memberCreateData)
     }
     setMemberFormOpen(false)
     setEditingMember(null)
@@ -111,7 +90,7 @@ export function ClaniInSkupinePage() {
       return memberParentIds.includes(id)
     }).length
     if (memberCount > 0) {
-      alert(`Ne morete izbrisati starša, ker je povezan z ${memberCount} ${memberCount === 1 ? 'tekmovalcem' : 'tekmovalci'}.`)
+      alert(`Ne morete izbrisati starša, ker je povezan z ${memberCount} ${memberCount === 1 ? 'članom' : 'člani'}.`)
       return
     }
     if (confirm('Ali ste prepričani, da želite izbrisati tega starša?')) {
@@ -147,7 +126,7 @@ export function ClaniInSkupinePage() {
     }).length
 
     if (memberCount > 0) {
-      alert(`Ne morete izbrisati trenerja, ker ima ${memberCount} ${memberCount === 1 ? 'tekmovalca' : 'tekmovalcev'} v skupini.`)
+      alert(`Ne morete izbrisati trenerja, ker ima ${memberCount} ${memberCount === 1 ? 'člana' : 'članov'} v skupini.`)
       return
     }
 
@@ -196,7 +175,7 @@ export function ClaniInSkupinePage() {
   const getPrimaryActionLabel = () => {
     switch (mode) {
       case 'members':
-        return 'Dodaj tekmovalca'
+        return 'Dodaj člana'
       case 'parents':
         return 'Dodaj starša'
       case 'coaches':
@@ -227,13 +206,13 @@ export function ClaniInSkupinePage() {
               Člani in skupine
             </h1>
             <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
-              Upravljanje tekmovalcev, staršev in trenerskih skupin
+              Upravljanje članov, staršev in trenerskih skupin
             </p>
           </div>
           <div className="flex gap-2">
             <Tabs value={mode} onValueChange={(v) => setMode(v as 'members' | 'parents' | 'coaches')}>
               <TabsList>
-                <TabsTrigger value="members">Tekmovalci</TabsTrigger>
+                <TabsTrigger value="members">Člani</TabsTrigger>
                 <TabsTrigger value="parents">Starši</TabsTrigger>
                 <TabsTrigger value="coaches">Trenerji</TabsTrigger>
               </TabsList>
@@ -258,7 +237,7 @@ export function ClaniInSkupinePage() {
             groupFilter={groupFilter}
             onViewMember={(id) => {
               const member = members.find((m) => m.id === id)
-              alert(`Pregled tekmovalca: ${member?.firstName} ${member?.lastName}`)
+              alert(`Pregled člana: ${member?.firstName} ${member?.lastName}`)
             }}
             onEditMember={handleEditMember}
             onDeleteMember={handleDeleteMember}

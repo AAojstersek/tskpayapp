@@ -33,7 +33,7 @@ export function ParentRow({
             </div>
             {memberCount > 0 && (
               <div className="text-sm text-slate-500 dark:text-slate-400">
-                {memberCount} {memberCount === 1 ? 'tekmovalec' : 'tekmovalcev'}
+                {memberCount} {memberCount === 1 ? 'član' : 'članov'}
               </div>
             )}
           </div>

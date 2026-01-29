@@ -71,7 +71,7 @@ export function generateEmailForParent(
 
   // Generate email
   let email = `Spoštovani/na ${parent.firstName} ${parent.lastName},\n\n`
-  email += `pošiljamo vam obvestilo o odprtih obveznostih za vaše tekmovalce:\n\n`
+  email += `pošiljamo vam obvestilo o odprtih obveznostih za vaše člane:\n\n`
 
   let totalAmount = 0
   costsByMember.forEach((memberCosts, memberId) => {

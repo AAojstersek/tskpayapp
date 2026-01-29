@@ -3,7 +3,7 @@
 // =============================================================================
 
 /**
- * Tekmovalec kluba, ki je vezan na starša (plačnika) in pripada eni ali več trenerskim skupinam.
+ * Član kluba, ki je vezan na starša (plačnika) in pripada eni ali več trenerskim skupinam.
  */
 export interface Member {
   id: string
@@ -13,12 +13,12 @@ export interface Member {
   status: 'active' | 'inactive' | 'archived'
   notes: string
   parentId?: string // Glavni starš (ohranjeno za kompatibilnost)
-  parentIds: string[] // Vsi starši tekmovalca
+  parentIds: string[] // Vsi starši člana
   groupId: string
 }
 
 /**
- * Starš tekmovalca, ki je odgovoren za plačila in je vezan na enega ali več tekmovalcev.
+ * Starš člana, ki je odgovoren za plačila in je vezan na enega ali več članov.
  */
 export interface Parent {
   id: string
@@ -40,7 +40,7 @@ export interface Coach {
 
 /**
  * Trenerska skupina (npr. Andrejeva skupina, Klemnova skupina, Luka skupina),
- * ki ima enega trenerja in vključuje več tekmovalcev.
+ * ki ima enega trenerja in vključuje več članov.
  */
 export interface Group {
   id: string
@@ -49,7 +49,7 @@ export interface Group {
 }
 
 /**
- * Strošek, ki je vezan na tekmovalca in predstavlja različne vrste obveznosti
+ * Strošek, ki je vezan na člana in predstavlja različne vrste obveznosti
  * (vadnine, oprema, članarine, priprave, modre kartice, zdravniški pregledi).
  */
 export interface Cost {
@@ -83,7 +83,7 @@ export type CostType =
   | 'zdravniški pregledi'
 
 /**
- * Plačilo od starša, ki lahko pokrije enega ali več stroškov tekmovalcev tega starša.
+ * Plačilo od starša, ki lahko pokrije enega ali več stroškov članov tega starša.
  */
 export interface Payment {
   id: string
